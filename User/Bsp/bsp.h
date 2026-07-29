@@ -19,6 +19,7 @@ extern "C" {
 #include "./usart_ex/usart_ex.h"
 #include "./can_list/can_list.h"
 #include "./DJI-Motor/dji_bldc_motor.h"
+#include "./arm/arm.h"
 
 
 void bsp_init(void);

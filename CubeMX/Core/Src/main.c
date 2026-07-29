@@ -95,6 +95,7 @@ int main(void)
   MX_FDCAN2_Init();
   MX_FDCAN3_Init();
   MX_LPUART1_UART_Init();
+  MX_UART5_Init();
   /* USER CODE BEGIN 2 */
   bsp_init();
   freertos_start();

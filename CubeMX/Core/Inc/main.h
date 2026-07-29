@@ -69,6 +69,8 @@ void Error_Handler(void);
 #define LED1_GPIO_Port GPIOB
 #define LED0_Pin GPIO_PIN_1
 #define LED0_GPIO_Port GPIOB
+#define RS485_RE2_Pin GPIO_PIN_4
+#define RS485_RE2_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

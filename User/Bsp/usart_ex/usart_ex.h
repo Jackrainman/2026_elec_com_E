@@ -139,7 +139,7 @@ extern "C" {
 
 // <h> UART5 Configuration
 //   <e> UART5_TX_DMA                Enable UART5 TX DMA
-#define UART5_TX_DMA            0
+#define UART5_TX_DMA            1
 
 #ifdef UART5_TX_DMA
 //   <o> UART5_TX_DMA_BUF_SIZE       UART5 TX DMA Buffer Size  <8-4096:8>
@@ -148,7 +148,7 @@ extern "C" {
 #endif /* UART5_TX_DMA */
 
 //   <e> UART5_RX_DMA                Enable UART5 RX DMA
-#define UART5_RX_DMA            0
+#define UART5_RX_DMA            1
 
 #ifdef UART5_RX_DMA
 //   <o> UART5_RX_DMA_BUF_SIZE       UART5 RX DMA Buffer Size  <8-4096:8>
