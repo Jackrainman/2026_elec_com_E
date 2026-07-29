@@ -3,13 +3,13 @@
 The Raspberry Pi sends one ASCII command per line:
 
 ```text
-x,y,th,a\r\n
+x,y,th,x1,y1,a\r\n
 ```
 
 Example:
 
 ```text
-1.23,4.56,7.89,10.11\r\n
+1.23,4.56,7.89,10.11,12.13,14.15\r\n
 ```
 
 Initialize the UART DMA and `uart_ex` first, then start the receiver:
@@ -28,7 +28,8 @@ if (raspi_serial_get_latest(&command) &&
     command.sequence != last_sequence) {
     last_sequence = command.sequence;
 
-    /* Use command.x, command.y, command.th and command.a here. */
+    /* Use command.x, command.y, command.th, command.x1, command.y1 and
+       command.a here. */
 }
 ```
 

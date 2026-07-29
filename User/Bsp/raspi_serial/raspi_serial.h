@@ -17,6 +17,8 @@ typedef struct {
     float x;
     float y;
     float th;
+    float x1;
+    float y1;
     float a;
     uint32_t sequence;
 } raspi_serial_data_t;

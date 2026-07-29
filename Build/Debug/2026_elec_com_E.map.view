@@ -1,0 +1,6 @@
+tool: AC6
+fileName: '2026_elec_com_E.map'
+elfName: '2026_elec_com_E.axf'
+compilerName: 'ARMCLANG 6'
+compilerFullName: 'ARMCLANG 6'
+compilerPath: '/home/whyyy/EnvClain/AC6/bin/armclang'

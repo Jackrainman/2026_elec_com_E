@@ -1,0 +1,46 @@
+--cpu Cortex-M4.fp --lto --scatter /home/whyyy/Desktop/2026_elec_com_E/Build/Debug/2026_elec_com_E.sct --diag_suppress=L6329 --strict --summary_stderr --info summarysizes --map --xref --callgraph --symbols --info sizes --info totals --info unused --info veneers
+--list ./Build/Debug/2026_elec_com_E.map
+./Build/Debug/.obj/CubeMX/Core/Src/dma.o
+./Build/Debug/.obj/CubeMX/Core/Src/fdcan.o
+./Build/Debug/.obj/CubeMX/Core/Src/gpio.o
+./Build/Debug/.obj/CubeMX/Core/Src/main.o
+./Build/Debug/.obj/CubeMX/Core/Src/stm32g4xx_hal_msp.o
+./Build/Debug/.obj/CubeMX/Core/Src/stm32g4xx_it.o
+./Build/Debug/.obj/CubeMX/Core/Src/system_stm32g4xx.o
+./Build/Debug/.obj/CubeMX/Core/Src/usart.o
+./Build/Debug/.obj/CubeMX/Drivers/CMSIS/Device/ST/STM32G4xx/Source/arm/startup_stm32g474xx.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_cortex.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma_ex.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_exti.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_fdcan.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ex.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr_ex.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc_ex.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart.o
+./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.o
+./Build/Debug/.obj/User/Application/Src/rtos_tasks.o
+./Build/Debug/.obj/User/Bsp/DJI-Motor/dji_bldc_motor.o
+./Build/Debug/.obj/User/Bsp/bsp.o
+./Build/Debug/.obj/User/Bsp/can_list/can_list.o
+./Build/Debug/.obj/User/Bsp/core_delay/core_delay.o
+./Build/Debug/.obj/User/Bsp/emm42/emm42.o
+./Build/Debug/.obj/User/Bsp/raspi_serial/raspi_serial.o
+./Build/Debug/.obj/User/Bsp/syscalls/syscalls.o
+./Build/Debug/.obj/User/Bsp/usart_ex/usart_ex.o
+./Build/Debug/.obj/User/Middlewares/FreeRTOS/croutine.o
+./Build/Debug/.obj/User/Middlewares/FreeRTOS/event_groups.o
+./Build/Debug/.obj/User/Middlewares/FreeRTOS/list.o
+./Build/Debug/.obj/User/Middlewares/FreeRTOS/portable/GCC/ARM_CM4F/port.o
+./Build/Debug/.obj/User/Middlewares/FreeRTOS/portable/MemMang/heap_4.o
+./Build/Debug/.obj/User/Middlewares/FreeRTOS/queue.o
+./Build/Debug/.obj/User/Middlewares/FreeRTOS/stream_buffer.o
+./Build/Debug/.obj/User/Middlewares/FreeRTOS/tasks.o
+./Build/Debug/.obj/User/Middlewares/FreeRTOS/timers.o
+./Build/Debug/.obj/User/Utils/ring_fifo/ring_fifo.o -o ./Build/Debug/2026_elec_com_E.axf

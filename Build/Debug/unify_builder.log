@@ -1,0 +1,51 @@
+[2026-07-29 17:44:42]	[info] incremental build: 44 source files changed
+These source files will be recompiled
+---
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/dma.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/fdcan.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/gpio.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/main.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/stm32g4xx_hal_msp.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/stm32g4xx_it.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/system_stm32g4xx.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/usart.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/CMSIS/Device/ST/STM32G4xx/Source/arm/startup_stm32g474xx.s': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_cortex.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma_ex.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_exti.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_fdcan.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ex.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr_ex.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc_ex.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Application/Src/rtos_tasks.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/DJI-Motor/dji_bldc_motor.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/bsp.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/can_list/can_list.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/core_delay/core_delay.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/emm42/emm42.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/raspi_serial/raspi_serial.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/syscalls/syscalls.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/usart_ex/usart_ex.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/croutine.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/event_groups.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/list.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/portable/GCC/ARM_CM4F/port.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/portable/MemMang/heap_4.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/queue.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/stream_buffer.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/tasks.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/timers.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Utils/ring_fifo/ring_fifo.c': object (.o) file not exist
+
+[2026-07-29 17:44:45]	[done]
+	build successfully !
+

@@ -21,18 +21,19 @@
 #define TASK_STACK      384U
 #define TASK_PRIORITY   4U
 #define POLL_TIME_MS    2U
+#define VALUE_COUNT     6U
 
 static UART_HandleTypeDef *raspi_uart;
 static TaskHandle_t task_handle;
 
-static raspi_serial_data_t latest_data = {0.0f, 0.0f, 0.0f, 0.0f, 0U};
+static raspi_serial_data_t latest_data = {0};
 static bool data_available = false;
 
 /* 分离转化数据 */
-static bool parse_frame(char *frame, float value[4]) {
+static bool parse_frame(char *frame, float value[VALUE_COUNT]) {
     char *position = frame;
 
-    for (uint32_t i = 0U; i < 4U; ++i) {
+    for (uint32_t i = 0U; i < VALUE_COUNT; ++i) {
         char *end;
         value[i] = strtof(position, &end);
 
@@ -42,7 +43,7 @@ static bool parse_frame(char *frame, float value[4]) {
 
         position = end;
 
-        if (i < 3U) {
+        if ((i + 1U) < VALUE_COUNT) {
             if (*position != ',') {
                 return false;
             }
@@ -54,13 +55,15 @@ static bool parse_frame(char *frame, float value[4]) {
 }
 
 /* 保存数值 */
-static void save_data(const float value[4]) {
+static void save_data(const float value[VALUE_COUNT]) {
     taskENTER_CRITICAL();
 
     latest_data.x = value[0];
     latest_data.y = value[1];
     latest_data.th = value[2];
-    latest_data.a = value[3];
+    latest_data.x1 = value[3];
+    latest_data.y1 = value[4];
+    latest_data.a = value[5];
     ++latest_data.sequence;
     data_available = true;
 
@@ -93,7 +96,7 @@ static void receive_task(void *argument) {
             }
 
             if (received == '\n') {
-                float value[4];
+                float value[VALUE_COUNT];
                 frame[length] = '\0';
 
                 if (!discard && (length > 0U) &&
