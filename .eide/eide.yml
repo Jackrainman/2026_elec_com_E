@@ -56,7 +56,7 @@ virtualFolder:
       folders:
         - name: startup
           files:
-            - path: CubeMX/Drivers/CMSIS/Device/ST/STM32G4xx/Source/arm/startup_stm32g474xx.s
+            - path: CubeMX/Drivers/CMSIS/Device/ST/STM32G4xx/Source/gcc/startup_stm32g474xx.s
           folders: []
 dependenceList: []
 outDir: Build
@@ -114,7 +114,7 @@ targets:
       - CubeMX/Core/Src/syscalls.c
     settings:
       debugger: cortex-debug
-    toolchain: AC6
+    toolchain: GCC
     toolchainConfigMap:
       AC6:
         archExtensions: ""
