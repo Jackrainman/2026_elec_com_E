@@ -59,7 +59,7 @@ void start_task(void *pvParameters) {
     xTaskCreate(arm_ctrl, "arm_ctrl", 512, NULL, 3, &arm_ctrl_handle);
 
     // vTaskSuspend(task4_handle);
-    //vTaskSuspend(arm_test_handle);
+    // vTaskSuspend(arm_test_handle);
     vTaskSuspend(msg_receive_handle);
     vTaskSuspend(arm_ctrl_handle);
 
@@ -243,6 +243,7 @@ void arm_ctrl(void *pvParameters) {
     raspi_serial_data_t command;
     raspi_serial_data_t last = {0};
     bool first = true;
+    uint8_t a = 4;  /* 轮次计数器，跑4轮后停止 */
 
     while (1) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -260,7 +261,6 @@ void arm_ctrl(void *pvParameters) {
             int32_t dr  = ARM_DEG_TO_PULSE_S(last.th - command.th);
             int32_t dx1 = ARM_X_MM_TO_PULSE_S(last.x1 - command.x1);
             int32_t dy1 = ARM_Y_MM_TO_PULSE_S(last.y1 - command.y1);
-            int32_t da  = ARM_DEG_TO_PULSE_S(last.a  - command.a);
 
             last = command;
 
@@ -281,7 +281,7 @@ void arm_ctrl(void *pvParameters) {
             uint32_t t1_y = (int32_t)cur2 + dy;
             uint32_t t1_r = (int32_t)cur3 + dr;
 
-            /* —— 发送第一段相对移动 —— */
+            /* —— 发送第一段相对移动（XY + R）—— */
             arm_axis_rel_move(1, dx, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
             arm_axis_rel_move(2, dy, 0);
@@ -294,36 +294,37 @@ void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(2, t1_y, 50, 5000);
             arm_wait_axis_done(3, t1_r, 50, 5000);
 
-            /* —— 再读位置，算第二段目标 —— */
+            /* —— 再读位置，算第二段目标（仅 XY，R 轴不变）—— */
             arm_update_position(1);
             vTaskDelay(pdMS_TO_TICKS(15));
             arm_update_position(2);
             vTaskDelay(pdMS_TO_TICKS(15));
-            arm_update_position(3);
-            vTaskDelay(pdMS_TO_TICKS(15));
 
             cur1 = arm_get_position_pulse(1);
             cur2 = arm_get_position_pulse(2);
-            cur3 = arm_get_position_pulse(3);
 
             uint32_t t2_x = (int32_t)cur1 + dx1;
             uint32_t t2_y = (int32_t)cur2 + dy1;
-            uint32_t t2_r = (int32_t)cur3 + da;
 
-            /* —— 发送第二段相对移动 —— */
+            /* —— 发送第二段相对移动（仅 XY）—— */
             arm_axis_rel_move(1, dx1, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
             arm_axis_rel_move(2, dy1, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_rel_move(3, da, 0);
-            vTaskDelay(pdMS_TO_TICKS(20));
 
             arm_wait_axis_done(1, t2_x, 50, 5000);
             arm_wait_axis_done(2, t2_y, 50, 5000);
-            arm_wait_axis_done(3, t2_r, 50, 5000);
+
         }
-        send_reply("OK\n");
+        send_reply("ok");
     }
+
+    /* 4轮结束：亮灯 + 挂起 */
+    if(a == 0) {
+        LED1_ON();
+        vTaskSuspend(NULL);
+    }
+    
 }
 
 #ifdef configASSERT
