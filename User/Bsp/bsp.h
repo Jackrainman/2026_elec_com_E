@@ -14,6 +14,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include <cubemx.h>
+#include "emm42/emm42.h"
 
 #include "./core_delay/core_delay.h"
 #include "./usart_ex/usart_ex.h"

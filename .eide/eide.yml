@@ -18,6 +18,7 @@ virtualFolder:
         - path: User/Bsp/can_list/can_list.c
         - path: User/Bsp/DJI-Motor/dji_bldc_motor.c
         - path: User/Bsp/usart_ex/usart_ex.c
+        - path: User/Bsp/emm42/emm42.c
       folders: []
     - name: Application
       files:

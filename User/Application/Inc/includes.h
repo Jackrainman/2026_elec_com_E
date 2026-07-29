@@ -22,6 +22,15 @@ extern "C" {
 
 void freertos_start(void);
 
+/* Application 模块接口 */
+void core_xyw_init(void);
+void core_xyw_move_to(float x, float y, float w);
+void core_xyw_home(void);
+
+void msg_process_init(void);
+
+void main_ctrl_init(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

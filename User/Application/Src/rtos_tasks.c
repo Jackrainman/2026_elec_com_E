@@ -20,6 +20,12 @@ void task2(void *pvParameters);
 static TaskHandle_t task3_handle;
 void task3(void *pvParameters);
 
+static TaskHandle_t task4_handle;
+void task4(void *pvParameters);
+
+#define DEMO_MOTOR_SPEED_RPM  300U   /* 换向演示速度 (RPM) */
+#define DEMO_MOTOR_TOGGLE_MS  2000U  /* 换向周期 (ms) */
+
 /*****************************************************************************/
 
 /**
@@ -43,6 +49,7 @@ void start_task(void *pvParameters) {
     xTaskCreate(task1, "task1", 128, NULL, 2, &task1_handle);
     xTaskCreate(task2, "task2", 128, NULL, 2, &task2_handle);
     xTaskCreate(task3, "task3", 128, NULL, 2, &task3_handle);
+    xTaskCreate(task4, "task4", 128, NULL, 2, &task4_handle);
 
     vTaskDelete(start_task_handle);
     taskEXIT_CRITICAL();
@@ -127,10 +134,36 @@ void task3(void *pvParameters) {
     }
 }
 
+/**
+ * @brief Task4: Emm42 motor toggle direction periodically (left/right).
+ *
+ * @param pvParameters Start parameters.
+ */
+void task4(void *pvParameters) {
+    UNUSED(pvParameters);
+
+    static emm42_motor_t demo_motor;
+    uint8_t dir = 0U;
+
+    /* 初始化电机: UART4 总线, 地址 1, RE 脚 PD14 */
+    emm42_motor_init(&demo_motor, &huart4, 1, RS485_RE1_GPIO_Port,
+                     RS485_RE1_Pin);
+    emm42_en_control(&demo_motor, true, false);
+
+    while (1) {
+        /* 左转/右转交替 (0 = CW, 1 = CCW) */
+        dir ^= 1U;
+
+        emm42_vel_control(&demo_motor, dir, DEMO_MOTOR_SPEED_RPM, 0, false);
+
+        vTaskDelay(DEMO_MOTOR_TOGGLE_MS);
+    }
+}
+
 #ifdef configASSERT
 /**
- * @brief FreeRTOS assert failed function. 
- * 
+ * @brief FreeRTOS assert failed function.
+ *
  * @param pcFile File name
  * @param ulLine File line
  */
@@ -156,7 +189,7 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
 #if configUSE_MALLOC_FAILED_HOOK
 /**
  * @brief This hook function is called when allocation failed.
- * 
+ *
  */
 void vApplicationMallocFailedHook(void) {
     fprintf(stderr, "FreeRTOS malloc failed! \n");
