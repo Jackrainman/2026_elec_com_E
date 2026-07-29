@@ -21,10 +21,6 @@ void task4(void *pvParameters);
 
 void arm_test(void *pvParameters);
 
-<<<<<<< HEAD
-#define DEMO_MOTOR_SPEED_RPM 300U  /* 换向演示速度 (RPM) */
-#define DEMO_MOTOR_TOGGLE_MS 2000U /* 换向周期 (ms) */
-=======
 static TaskHandle_t msg_receive_handle;
 void msg_receive(void *pvParameters);
 
@@ -33,7 +29,6 @@ void arm_ctrl(void *pvParameters);
 
 #define DEMO_MOTOR_SPEED_RPM  300U   /* 换向演示速度 (RPM) */
 #define DEMO_MOTOR_TOGGLE_MS  2000U  /* 换向周期 (ms) */
->>>>>>> e214c200d96f4d1acfd646f75e726734dc2b64ae
 
 /*****************************************************************************/
 
@@ -54,20 +49,6 @@ void freertos_start(void) {
 void start_task(void *pvParameters) {
     UNUSED(pvParameters);
 
-<<<<<<< HEAD
-    if (xTaskCreate(task1, "task1", 128, NULL, 2, &task1_handle) != pdPASS) {
-        Error_Handler();
-    }
-    if (xTaskCreate(task2, "task2", 128, NULL, 2, &task2_handle) != pdPASS) {
-        Error_Handler();
-    }
-    xTaskCreate(task4, "task4", 128, NULL, 2, NULL);
-    xTaskCreate(arm_test, "arm_test", 512, NULL, 3, NULL);
-
-    if (!raspi_serial_init(&huart1)) {
-        Error_Handler();
-    }
-=======
     xTaskCreate(task1, "task1", 128, NULL, 2, &task1_handle);
     xTaskCreate(task2, "task2", 128, NULL, 2, &task2_handle);
     xTaskCreate(task4, "task4", 128, NULL, 2, &task4_handle);
@@ -81,7 +62,6 @@ void start_task(void *pvParameters) {
     vTaskSuspend(arm_ctrl_handle);
 
     raspi_serial_init(&huart1);
->>>>>>> e214c200d96f4d1acfd646f75e726734dc2b64ae
 
     vTaskDelete(NULL);
 }
@@ -340,6 +320,7 @@ void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(2, t2_y, 50, 5000);
             arm_wait_axis_done(3, t2_r, 50, 5000);
         }
+        send_reply("OK\n");
     }
 }
 
