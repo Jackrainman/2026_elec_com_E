@@ -33,45 +33,45 @@ void arm_init(void)
 }
 
 /**
- * @brief  单轴绝对移动（角度制，相对坐标零点）
+ * @brief  单轴绝对移动（相对坐标零点）
  */
-void arm_axis_move(uint8_t axis, float degree, uint16_t speed)
+void arm_axis_move(uint8_t axis, uint32_t pulse, uint16_t speed)
 {
     if (axis < 1 || axis > 3) return;
 
     if (speed == 0) speed = ARM_DEFAULT_SPEED;
 
     /* 绝对位置模式: mode=1 (相对坐标零点) */
-    emm42_pos_control(&arm_motor[ARM_AXIS_IDX(axis)], ARM_DIR_CW, speed,
-                      ARM_DEFAULT_ACC, degree, 1, false);
+    emm42_pos_control_pulse(&arm_motor[ARM_AXIS_IDX(axis)], ARM_DIR_CW, speed,
+                            ARM_DEFAULT_ACC, pulse, 1, false);
 }
 
 /**
  * @brief  单轴相对移动
  */
-void arm_axis_rel_move(uint8_t axis, float degree, uint16_t speed)
+void arm_axis_rel_move(uint8_t axis, int32_t pulse, uint16_t speed)
 {
     if (axis < 1 || axis > 3) return;
 
     if (speed == 0) speed = ARM_DEFAULT_SPEED;
 
-    uint8_t dir = (degree >= 0.0f) ? ARM_DIR_CW : ARM_DIR_CCW;
-    float abs_deg = (degree >= 0.0f) ? degree : -degree;
+    uint8_t dir = (pulse >= 0) ? ARM_DIR_CW : ARM_DIR_CCW;
+    uint32_t abs_pulse = (pulse >= 0) ? (uint32_t)pulse : (uint32_t)(-pulse);
 
     /* 相对位置模式: mode=2 (相对当前位置) */
-    emm42_pos_control(&arm_motor[ARM_AXIS_IDX(axis)], dir, speed,
-                      ARM_DEFAULT_ACC, abs_deg, 2, false);
+    emm42_pos_control_pulse(&arm_motor[ARM_AXIS_IDX(axis)], dir, speed,
+                            ARM_DEFAULT_ACC, abs_pulse, 2, false);
 }
 
 /**
  * @brief  估算单轴移动耗时
  */
-uint32_t arm_est_move_ms(float degree, uint16_t speed)
+uint32_t arm_est_move_ms(uint32_t pulse, uint16_t speed)
 {
     if (speed == 0) speed = ARM_DEFAULT_SPEED;
 
-    float sec = degree / ((float)speed * 6.0f);
-    if (sec < 0.0f) sec = -sec;
+    /* 圈数 = pulse / 3200, 时间 = 圈数 / (RPM / 60) */
+    float sec = (float)pulse / (float)ARM_PULSE_PER_REV / ((float)speed / 60.0f);
 
     return (uint32_t)(sec * 1000.0f) + 300;
 }
@@ -111,10 +111,14 @@ void arm_update_position(uint8_t axis)
 /**
  * @brief  等待指定轴运动到位（阻塞式，主动查询位置）
  */
-bool arm_wait_axis_done(uint8_t axis, float target, float tolerance,
+bool arm_wait_axis_done(uint8_t axis, uint32_t target, uint32_t tolerance,
                         uint32_t timeout_ms)
 {
     if (axis < 1 || axis > 3) return false;
+
+    /* cur_pos 存的是角度, 转到脉冲域比较: pulse = degree / 360 * 3200 */
+    uint32_t target_pulse = target;
+    uint32_t tol_pulse    = tolerance;
 
     TickType_t start = xTaskGetTickCount();
     TickType_t timeout_ticks = (timeout_ms > 0) ? pdMS_TO_TICKS(timeout_ms)
@@ -123,9 +127,12 @@ bool arm_wait_axis_done(uint8_t axis, float target, float tolerance,
     while (1) {
         arm_update_position(axis);
 
-        float diff = arm_motor[ARM_AXIS_IDX(axis)].cur_pos - target;
-        if (diff < 0.0f) diff = -diff;
-        if (diff <= tolerance) return true;
+        float cur_deg = arm_motor[ARM_AXIS_IDX(axis)].cur_pos;
+        uint32_t cur_pulse = (uint32_t)(cur_deg / 360.0f * (float)ARM_PULSE_PER_REV);
+
+        int32_t diff = (int32_t)cur_pulse - (int32_t)target_pulse;
+        if (diff < 0) diff = -diff;
+        if ((uint32_t)diff <= tol_pulse) return true;
 
         /* 超时检查 */
         if (timeout_ms > 0) {

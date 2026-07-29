@@ -29,6 +29,17 @@ extern "C" {
 #define ARM_DEFAULT_SPEED   120     /* 默认转速 RPM */
 #define ARM_DEFAULT_ACC     5       /* 默认加速度档位 */
 
+/* 细分: 16细分 = 3200 脉冲/圈 */
+#define ARM_PULSE_PER_REV   3200U
+
+/* ========================== 单位换算 ========================== */
+#define ARM_MM_PER_REV      10.0f   /*!< 丝杆导程 mm/圈 (按实际修改) */
+
+/* 距离 → 脉冲 */
+#define ARM_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+/* 角度 → 脉冲 */
+#define ARM_DEG_TO_PULSE(deg) ((uint32_t)((float)(deg) / 360.0f * (float)ARM_PULSE_PER_REV))
+
 /* 方向定义（与 emm42 一致: 0=CW, 1=CCW） */
 #define ARM_DIR_CW   0
 #define ARM_DIR_CCW  1
@@ -42,28 +53,28 @@ extern "C" {
 void arm_init(void);
 
 /**
- * @brief  单轴绝对移动（角度制，相对坐标零点）
- * @param  axis    轴编号：1=X, 2=Y, 3=R
- * @param  degree  目标角度（°）
- * @param  speed   转速（RPM），填0则使用默认值
+ * @brief  单轴绝对移动（相对坐标零点）
+ * @param  axis   轴编号：1=X, 2=Y, 3=R
+ * @param  pulse  目标脉冲数 (16细分, 3200脉冲/圈)
+ * @param  speed  转速（RPM），填0则使用默认值
  */
-void arm_axis_move(uint8_t axis, float degree, uint16_t speed);
+void arm_axis_move(uint8_t axis, uint32_t pulse, uint16_t speed);
 
 /**
  * @brief  单轴相对移动
- * @param  axis    轴编号
- * @param  degree  相对角度（°），正 CW / 负 CCW
- * @param  speed   转速（RPM），填0则使用默认值
+ * @param  axis   轴编号
+ * @param  pulse  相对脉冲数 (正 CW / 负 CCW)
+ * @param  speed  转速（RPM），填0则使用默认值
  */
-void arm_axis_rel_move(uint8_t axis, float degree, uint16_t speed);
+void arm_axis_rel_move(uint8_t axis, int32_t pulse, uint16_t speed);
 
 /**
  * @brief  估算单轴移动耗时
- * @param  degree  移动角度（°）
- * @param  speed   转速（RPM）
+ * @param  pulse  移动脉冲数
+ * @param  speed  转速（RPM）
  * @return 预估耗时（ms），已含加减速余量
  */
-uint32_t arm_est_move_ms(float degree, uint16_t speed);
+uint32_t arm_est_move_ms(uint32_t pulse, uint16_t speed);
 
 /**
  * @brief  查询并更新指定轴的实时位置（阻塞约 5ms）
@@ -75,12 +86,12 @@ void arm_update_position(uint8_t axis);
 /**
  * @brief  等待指定轴运动到位（阻塞式，主动查询位置）
  * @param  axis       轴编号
- * @param  target     目标角度（°）
- * @param  tolerance  到位容差（°），建议 0.5 ~ 2.0
+ * @param  target     目标脉冲数
+ * @param  tolerance  到位容差（脉冲数），建议 50 ~ 200
  * @param  timeout_ms 超时（ms），填 0 则永不超时
  * @return true=到位, false=超时
  */
-bool arm_wait_axis_done(uint8_t axis, float target, float tolerance,
+bool arm_wait_axis_done(uint8_t axis, uint32_t target, uint32_t tolerance,
                         uint32_t timeout_ms);
 
 /**

@@ -83,6 +83,8 @@ void emm42_vel_control(emm42_motor_t *motor, uint8_t dir, uint16_t vel,
                        uint8_t acc, bool snF);
 void emm42_pos_control(emm42_motor_t *motor, uint8_t dir, uint16_t vel,
                        uint8_t acc, float degree, uint8_t mode, bool snF);
+void emm42_pos_control_pulse(emm42_motor_t *motor, uint8_t dir, uint16_t vel,
+                             uint8_t acc, uint32_t pulse, uint8_t mode, bool snF);
 void emm42_stop_now(emm42_motor_t *motor, bool snF);
 void emm42_origin_trigger_return(emm42_motor_t *motor, uint8_t o_mode,
                                  bool snF);

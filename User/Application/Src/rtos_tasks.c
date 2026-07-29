@@ -132,7 +132,10 @@ void task4(void *pvParameters) {
  * KEY0: 全部轴回零点
  * KEY1: XY 两轴顺序移动
  * KEY2: R 轴自转 90°
- * WKUP: XYR 三轴顺序旋转
+ * WKUP: XYR 三轴顺序移动
+ *
+ * @note  参数为脉冲数, 16细分 3200脉冲/圈
+ *        90° = 800脉冲, 180° = 1600脉冲
  *
  * @param pvParameters Start parameters.
  */
@@ -147,34 +150,38 @@ void arm_test(void *pvParameters) {
         key = key_scan(0);
         switch (key) {
             case KEY0_PRESS: {
-                arm_axis_move(3, 180.0f, 100);
+                /* R 轴回 180° */
+                arm_axis_move(3, ARM_DEG_TO_PULSE(180), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(2, 0.0f, 100);
+                /* Y 轴回零 */
+                arm_axis_move(2, 0, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(1, 0.0f, 100);
+                /* X 轴回零 */
+                arm_axis_move(1, 0, 100);
             } break;
 
             case KEY1_PRESS: {
-                /* X */
-                arm_axis_move(1, 90.0f, 100);
+                /* X 轴 90° */
+                arm_axis_move(1, ARM_DEG_TO_PULSE(90), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* Y */
-                arm_axis_move(2, 90.0f, 100);
+                /* Y 轴 90° */
+                arm_axis_move(2, ARM_DEG_TO_PULSE(90), 100);
             } break;
 
             case KEY2_PRESS: {
-                arm_axis_move(3, 90.0f, 100);
+                /* R 轴自转 90° */
+                arm_axis_move(3, ARM_DEG_TO_PULSE(90), 100);
             } break;
 
             case WKUP_PRESS: {
-                /* X */
-                arm_axis_move(1, 90.0f, 100);
+                /* X 轴 90° */
+                arm_axis_move(1, ARM_DEG_TO_PULSE(90), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* Y */
-                arm_axis_move(2, 90.0f, 100);
+                /* Y 轴 90° */
+                arm_axis_move(2, ARM_DEG_TO_PULSE(90), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* R */
-                arm_axis_move(3, 90.0f, 100);
+                /* R 轴 90° */
+                arm_axis_move(3, ARM_DEG_TO_PULSE(90), 100);
             } break;
 
             default: break;

@@ -188,6 +188,36 @@ void emm42_pos_control(emm42_motor_t *motor, uint8_t dir, uint16_t vel,
 }
 
 /**
+ * @brief 位置模式控制 (脉冲直传)
+ *
+ * @param motor 电机句柄
+ * @param dir 方向, 0 = CW, 1 = CCW
+ * @param vel 速度, 0 - 3000 (RPM)
+ * @param acc 加速度档位, 0 - 255, 0 为直接启动
+ * @param pulse 目标脉冲数 (16细分下 3200 脉冲/圈)
+ * @param mode 运动模式, 0 = 相对上一输入目标位置,
+ *             1 = 相对坐标零点绝对位置, 2 = 相对当前实时位置
+ * @param snF 同步标志, false 立即执行 / true 缓存等待多机同步
+ */
+void emm42_pos_control_pulse(emm42_motor_t *motor, uint8_t dir, uint16_t vel,
+                             uint8_t acc, uint32_t pulse, uint8_t mode, bool snF) {
+    uint8_t cmd[13] = {motor->addr,
+                       0xFD,
+                       dir,
+                       (uint8_t)(vel >> 8),
+                       (uint8_t)(vel >> 0),
+                       acc,
+                       (uint8_t)(pulse >> 24),
+                       (uint8_t)(pulse >> 16),
+                       (uint8_t)(pulse >> 8),
+                       (uint8_t)(pulse >> 0),
+                       mode,
+                       (uint8_t)snF,
+                       0x6B};
+    send_frame(motor, cmd, sizeof(cmd));
+}
+
+/**
  * @brief 立即停止
  *
  * @param motor 电机句柄
