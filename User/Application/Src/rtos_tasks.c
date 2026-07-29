@@ -37,6 +37,8 @@ void start_task(void *pvParameters) {
     UNUSED(pvParameters);
     taskENTER_CRITICAL();
 
+    smd_usart_recv_init();
+
     xTaskCreate(task1, "task1", 128, NULL, 2, &task1_handle);
     xTaskCreate(arm_test, "arm_test", 512, NULL, 3, &arm_test_handle);
 
