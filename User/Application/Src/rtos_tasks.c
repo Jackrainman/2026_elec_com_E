@@ -61,6 +61,8 @@ void start_task(void *pvParameters) {
 
     vTaskSuspend(task4_handle);
     //vTaskSuspend(arm_test_handle);
+    vTaskSuspend(msg_receive_handle);
+    vTaskSuspend(arm_ctrl_handle);
 
     raspi_serial_init(&huart1);
 
@@ -138,14 +140,12 @@ void task4(void *pvParameters) {
 
 /**
  * @brief Arm test task: 按键控制机械臂动作
+ *        X/Y 轴绝对位置, R 轴角度相对移动
  *
- * KEY0: 全部轴回零点
- * KEY1: XY 两轴顺序移动
- * KEY2: R 轴自转 90°
- * WKUP: XYR 三轴顺序移动
- *
- * @note  参数为脉冲数, 16细分 3200脉冲/圈
- *        90° = 800脉冲, 180° = 1600脉冲
+ * KEY0: X/Y +5cm,  R +90°
+ * KEY1: X/Y -3cm,  R -90°
+ * KEY2: X/Y +10cm, R +270°
+ * WKUP: X/Y 回零,  R -180°
  *
  * @param pvParameters Start parameters.
  */
@@ -157,42 +157,52 @@ void arm_test(void *pvParameters) {
     key_press_t key;
 
     while (1) {
-        /* 按键控制 */
         key = key_scan(0);
         switch (key) {
             case KEY0_PRESS: {
-                /* R 轴回 180° */
-                arm_axis_move(3, ARM_DEG_TO_PULSE(180), 100);
+                /* X/Y +5cm */
+                arm_update_position(1);
+                arm_axis_move(1, arm_get_position_pulse(1) + ARM_X_MM_TO_PULSE(50), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* Y 轴回零 */
-                arm_axis_move(2, 0, 100);
+                arm_update_position(2);
+                arm_axis_move(2, arm_get_position_pulse(2) + ARM_Y_MM_TO_PULSE(50), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* X 轴回零 */
-                arm_axis_move(1, 0, 100);
+                /* R +90° */
+                arm_axis_rel_move(3, (int32_t)ARM_DEG_TO_PULSE(90), 100);
             } break;
 
             case KEY1_PRESS: {
-                /* X 轴 90° */
-                arm_axis_move(1, ARM_DEG_TO_PULSE(90), 100);
+                /* X/Y -3cm */
+                arm_update_position(1);
+                arm_axis_move(1, arm_get_position_pulse(1) - ARM_X_MM_TO_PULSE(30), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* Y 轴 90° */
-                arm_axis_move(2, ARM_DEG_TO_PULSE(90), 100);
+                arm_update_position(2);
+                arm_axis_move(2, arm_get_position_pulse(2) - ARM_Y_MM_TO_PULSE(30), 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                /* R -90° */
+                arm_axis_rel_move(3, -(int32_t)ARM_DEG_TO_PULSE(90), 100);
             } break;
 
             case KEY2_PRESS: {
-                /* R 轴自转 90° */
-                arm_axis_move(3, ARM_DEG_TO_PULSE(90), 100);
+                /* X/Y +10cm */
+                arm_update_position(1);
+                arm_axis_move(1, arm_get_position_pulse(1) + ARM_X_MM_TO_PULSE(100), 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                arm_update_position(2);
+                arm_axis_move(2, arm_get_position_pulse(2) + ARM_Y_MM_TO_PULSE(100), 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                /* R +270° */
+                arm_axis_rel_move(3, (int32_t)ARM_DEG_TO_PULSE(270), 100);
             } break;
 
             case WKUP_PRESS: {
-                /* X 轴 90° */
-                arm_axis_move(1, ARM_DEG_TO_PULSE(90), 100);
+                /* X/Y 回零点 */
+                arm_axis_move(1, 0, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* Y 轴 90° */
-                arm_axis_move(2, ARM_DEG_TO_PULSE(90), 100);
+                arm_axis_move(2, 0, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* R 轴 90° */
-                arm_axis_move(3, ARM_DEG_TO_PULSE(90), 100);
+                /* R -180° */
+                arm_axis_rel_move(3, -(int32_t)ARM_DEG_TO_PULSE(180), 100);
             } break;
 
             default: break;
@@ -241,11 +251,11 @@ void arm_ctrl(void *pvParameters) {
 
         /* 读取最新坐标 */
         if (raspi_serial_get_latest(&command)) {
-            uint32_t x_pulse  = ARM_MM_TO_PULSE(command.x);
-            uint32_t y_pulse  = ARM_MM_TO_PULSE(command.y);
+            uint32_t x_pulse  = ARM_X_MM_TO_PULSE(command.x);
+            uint32_t y_pulse  = ARM_Y_MM_TO_PULSE(command.y);
             uint32_t r_pulse  = ARM_DEG_TO_PULSE(command.th);
-            uint32_t x1_pulse = ARM_MM_TO_PULSE(command.x1);
-            uint32_t y1_pulse = ARM_MM_TO_PULSE(command.y1);
+            uint32_t x1_pulse = ARM_X_MM_TO_PULSE(command.x1);
+            uint32_t y1_pulse = ARM_Y_MM_TO_PULSE(command.y1);
             uint32_t a_pulse  = ARM_DEG_TO_PULSE(command.a);
 
             /* 第一段: (x, y, th) */

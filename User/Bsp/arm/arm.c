@@ -166,6 +166,16 @@ void arm_enable_all(bool en)
 }
 
 /**
+ * @brief  读取指定轴当前位置（脉冲数）
+ */
+uint32_t arm_get_position_pulse(uint8_t axis)
+{
+    if (axis < 1 || axis > 3) return 0;
+    float cur_deg = arm_motor[ARM_AXIS_IDX(axis)].cur_pos;
+    return (uint32_t)(cur_deg / 360.0f * (float)ARM_PULSE_PER_REV);
+}
+
+/**
  * @brief  全部轴当前位置清零
  */
 void arm_set_zero(void)
