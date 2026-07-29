@@ -33,12 +33,23 @@ extern "C" {
 #define ARM_PULSE_PER_REV   3200U
 
 /* ========================== 单位换算 ========================== */
-#define ARM_MM_PER_REV      10.0f   /*!< 丝杆导程 mm/圈 (按实际修改) */
+#define ARM_X_MM_PER_REV    40.0f   /*!< X轴丝杆导程 mm/圈  */
+#define ARM_Y_MM_PER_REV    40.0f   /*!< Y轴丝杆导程 mm/圈  */
+#define ARM_R_MM_PER_REV    40.0f   /*!< R轴丝杆导程 mm/圈  */
 
-/* 距离 → 脉冲 */
-#define ARM_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_MM_PER_REV * (float)ARM_PULSE_PER_REV))
-/* 角度 → 脉冲 */
+/* 距离 → 脉冲（无符号，绝对位置用） */
+#define ARM_X_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_Y_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_R_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_R_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+/* 角度 → 脉冲（无符号） */
 #define ARM_DEG_TO_PULSE(deg) ((uint32_t)((float)(deg) / 360.0f * (float)ARM_PULSE_PER_REV))
+
+/* 距离 → 脉冲（有符号，相对位置用） */
+#define ARM_X_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_Y_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_R_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_R_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+/* 角度 → 脉冲（有符号） */
+#define ARM_DEG_TO_PULSE_S(deg) ((int32_t)((float)(deg) / 360.0f * (float)ARM_PULSE_PER_REV))
 
 /* 方向定义（与 emm42 一致: 0=CW, 1=CCW） */
 #define ARM_DIR_CW   0
@@ -104,6 +115,14 @@ void arm_emergency_stop(void);
  * @param  en  true=锁轴使能, false=松轴
  */
 void arm_enable_all(bool en);
+
+/**
+ * @brief  读取指定轴当前位置（脉冲数）
+ * @note   需先调用 arm_update_position() 刷新位置
+ * @param  axis  轴编号
+ * @return 当前位置脉冲数
+ */
+uint32_t arm_get_position_pulse(uint8_t axis);
 
 /**
  * @brief  将全部轴当前位置清零（设为坐标原点）
