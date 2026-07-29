@@ -17,11 +17,11 @@ void task1(void *pvParameters);
 static TaskHandle_t task2_handle;
 void task2(void *pvParameters);
 
-static TaskHandle_t task3_handle;
-void task3(void *pvParameters);
-
 static TaskHandle_t task4_handle;
 void task4(void *pvParameters);
+
+static TaskHandle_t arm_test_handle;
+void arm_test(void *pvParameters);
 
 #define DEMO_MOTOR_SPEED_RPM  300U   /* 换向演示速度 (RPM) */
 #define DEMO_MOTOR_TOGGLE_MS  2000U  /* 换向周期 (ms) */
@@ -48,8 +48,11 @@ void start_task(void *pvParameters) {
 
     xTaskCreate(task1, "task1", 128, NULL, 2, &task1_handle);
     xTaskCreate(task2, "task2", 128, NULL, 2, &task2_handle);
-    xTaskCreate(task3, "task3", 128, NULL, 2, &task3_handle);
     xTaskCreate(task4, "task4", 128, NULL, 2, &task4_handle);
+    xTaskCreate(arm_test, "arm_test", 512, NULL, 3, &arm_test_handle);
+
+    vTaskSuspend(task4_handle);
+    //vTaskSuspend(arm_test_handle);
 
     vTaskDelete(start_task_handle);
     taskEXIT_CRITICAL();
@@ -98,43 +101,6 @@ void task2(void *pvParameters) {
 }
 
 /**
- * @brief Task3: Scan the key and print which key pressed.
- *
- * @param pvParameters Start parameters.
- */
-void task3(void *pvParameters) {
-    UNUSED(pvParameters);
-
-    key_press_t key = KEY_NO_PRESS;
-
-    while (1) {
-        key = key_scan(0);
-        switch (key) {
-            case WKUP_PRESS: {
-                printf("Wake Up Pressed. \n");
-            } break;
-
-            case KEY0_PRESS: {
-                printf("KEY0 Pressed. \n");
-            } break;
-
-            case KEY1_PRESS: {
-                printf("KEY1 Pressed. \n");
-            } break;
-
-            case KEY2_PRESS: {
-                printf("KEY2 Pressed. \n");
-            } break;
-
-            default: {
-            } break;
-        }
-
-        vTaskDelay(10);
-    }
-}
-
-/**
  * @brief Task4: Emm42 motor toggle direction periodically (left/right).
  *
  * @param pvParameters Start parameters.
@@ -146,7 +112,7 @@ void task4(void *pvParameters) {
     uint8_t dir = 0U;
 
     /* 初始化电机: UART4 总线, 地址 1, RE 脚 PD14 */
-    emm42_motor_init(&demo_motor, &huart4, 1, RS485_RE1_GPIO_Port,
+    emm42_motor_init(&demo_motor, &huart4, 2, RS485_RE1_GPIO_Port,
                      RS485_RE1_Pin);
     emm42_en_control(&demo_motor, true, false);
 
@@ -157,6 +123,63 @@ void task4(void *pvParameters) {
         emm42_vel_control(&demo_motor, dir, DEMO_MOTOR_SPEED_RPM, 0, false);
 
         vTaskDelay(DEMO_MOTOR_TOGGLE_MS);
+    }
+}
+
+/**
+ * @brief Arm test task: 按键控制机械臂动作
+ *
+ * KEY0: 全部轴回零点
+ * KEY1: XY 两轴顺序移动
+ * KEY2: R 轴自转 90°
+ * WKUP: XYR 三轴顺序旋转
+ *
+ * @param pvParameters Start parameters.
+ */
+void arm_test(void *pvParameters) {
+    UNUSED(pvParameters);
+
+    arm_init();
+
+    key_press_t key;
+
+    while (1) {
+        key = key_scan(0);
+        switch (key) {
+            case KEY0_PRESS: {
+                arm_axis_move(3, 180.0f, 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                arm_axis_move(2, 0.0f, 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                arm_axis_move(1, 0.0f, 100);
+            } break;
+
+            case KEY1_PRESS: {
+                /* X */
+                arm_axis_move(1, 90.0f, 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                /* Y */
+                arm_axis_move(2, 90.0f, 100);
+            } break;
+
+            case KEY2_PRESS: {
+                arm_axis_move(3, 90.0f, 100);
+            } break;
+
+            case WKUP_PRESS: {
+                /* X */
+                arm_axis_move(1, 90.0f, 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                /* Y */
+                arm_axis_move(2, 90.0f, 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                /* R */
+                arm_axis_move(3, 90.0f, 100);
+            } break;
+
+            default: break;
+        }
+        vTaskDelay(10);
     }
 }
 
