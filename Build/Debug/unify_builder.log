@@ -1,4 +1,4 @@
-[2026-07-29 17:44:42]	[info] incremental build: 44 source files changed
+[2026-07-29 20:42:57]	[info] incremental build: 45 source files changed
 These source files will be recompiled
 ---
 '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/dma.c': object (.o) file not exist
@@ -28,6 +28,7 @@ These source files will be recompiled
 '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.c': object (.o) file not exist
 '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Src/rtos_tasks.c': object (.o) file not exist
 '/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/DJI-Motor/dji_bldc_motor.c': object (.o) file not exist
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/arm/arm.c': object (.o) file not exist
 '/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/bsp.c': object (.o) file not exist
 '/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/can_list/can_list.c': object (.o) file not exist
 '/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/core_delay/core_delay.c': object (.o) file not exist
@@ -46,6 +47,139 @@ These source files will be recompiled
 '/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/timers.c': object (.o) file not exist
 '/home/whyyy/Desktop/2026_elec_com_E/User/Utils/ring_fifo/ring_fifo.c': object (.o) file not exist
 
-[2026-07-29 17:44:45]	[done]
+[2026-07-29 20:42:59]	[done]
+	build successfully !
+
+[2026-07-29 20:44:23]	[info] incremental build: 34 source files changed
+These source files will be recompiled
+---
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/dma.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/fdcan.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/gpio.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/main.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/stm32g4xx_hal_msp.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/stm32g4xx_it.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/system_stm32g4xx.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g4xx.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/usart.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_cortex.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma_ex.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_exti.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_fdcan.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ex.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr_ex.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc_ex.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Application/Src/rtos_tasks.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/DJI-Motor/dji_bldc_motor.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/arm/arm.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/bsp.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/can_list/can_list.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/core_delay/core_delay.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/emm42/emm42.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/raspi_serial/raspi_serial.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/syscalls/syscalls.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/usart_ex/usart_ex.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h' has been changed.
+
+[2026-07-29 20:44:25]	[done]
+	build successfully !
+
+[2026-07-29 20:46:57]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'/home/whyyy/Desktop/2026_elec_com_E/User/Application/Src/rtos_tasks.c': source file has been changed.
+
+[2026-07-29 20:46:59]	[done]
+	build successfully !
+
+[2026-07-29 20:47:34]	[info] incremental build: 15 source files changed
+These source files will be recompiled
+---
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/stm32g4xx_it.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Application/Src/rtos_tasks.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/arm/arm.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/can_list/can_list.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/core_delay/core_delay.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/raspi_serial/raspi_serial.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/croutine.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/event_groups.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/list.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/portable/GCC/ARM_CM4F/port.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/portable/MemMang/heap_4.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/queue.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/stream_buffer.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/tasks.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Middlewares/FreeRTOS/timers.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Application/Inc/FreeRTOSConfig.h' has been changed.
+
+[2026-07-29 20:47:36]	[done]
+	build successfully !
+
+[2026-07-29 20:50:55]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/raspi_serial/raspi_serial.c': source file has been changed.
+
+[2026-07-29 20:50:56]	[done]
+	build successfully !
+
+[2026-07-29 20:52:30]	[info] incremental build: 2 source files changed
+These source files will be recompiled
+---
+'/home/whyyy/Desktop/2026_elec_com_E/User/Application/Src/rtos_tasks.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/raspi_serial/raspi_serial.c': source file has been changed.
+
+[2026-07-29 20:52:31]	[done]
+	build successfully !
+
+[2026-07-29 20:54:21]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'/home/whyyy/Desktop/2026_elec_com_E/User/Application/Src/rtos_tasks.c': source file has been changed.
+
+[2026-07-29 20:54:22]	[done]
+	build successfully !
+
+[2026-07-29 20:54:34]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'/home/whyyy/Desktop/2026_elec_com_E/User/Application/Src/rtos_tasks.c': source file has been changed.
+
+[2026-07-29 20:54:35]	[done]
+	build successfully !
+
+[2026-07-29 21:03:46]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'/home/whyyy/Desktop/2026_elec_com_E/User/Application/Src/rtos_tasks.c': source file has been changed.
+
+[2026-07-29 21:03:47]	[done]
+	build successfully !
+
+[2026-07-29 21:08:39]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'/home/whyyy/Desktop/2026_elec_com_E/User/Application/Src/rtos_tasks.c': source file has been changed.
+
+[2026-07-29 21:08:41]	[done]
+	build successfully !
+
+[2026-07-29 21:12:07]	[info] incremental build: 6 source files changed
+These source files will be recompiled
+---
+'/home/whyyy/Desktop/2026_elec_com_E/CubeMX/Core/Src/main.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/usart_ex/usart_ex.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Application/Src/rtos_tasks.c': source file has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/arm/arm.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/usart_ex/usart_ex.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/bsp.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/usart_ex/usart_ex.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/raspi_serial/raspi_serial.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/usart_ex/usart_ex.h' has been changed.
+'/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/usart_ex/usart_ex.c': dependence '/home/whyyy/Desktop/2026_elec_com_E/User/Bsp/usart_ex/usart_ex.h' has been changed.
+
+[2026-07-29 21:12:09]	[done]
 	build successfully !
 

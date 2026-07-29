@@ -27,6 +27,7 @@
 ./Build/Debug/.obj/CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.o
 ./Build/Debug/.obj/User/Application/Src/rtos_tasks.o
 ./Build/Debug/.obj/User/Bsp/DJI-Motor/dji_bldc_motor.o
+./Build/Debug/.obj/User/Bsp/arm/arm.o
 ./Build/Debug/.obj/User/Bsp/bsp.o
 ./Build/Debug/.obj/User/Bsp/can_list/can_list.o
 ./Build/Debug/.obj/User/Bsp/core_delay/core_delay.o

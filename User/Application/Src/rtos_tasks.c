@@ -17,14 +17,12 @@ void task1(void *pvParameters);
 static TaskHandle_t task2_handle;
 void task2(void *pvParameters);
 
-static TaskHandle_t task4_handle;
 void task4(void *pvParameters);
 
-static TaskHandle_t arm_test_handle;
 void arm_test(void *pvParameters);
 
-#define DEMO_MOTOR_SPEED_RPM  300U   /* 换向演示速度 (RPM) */
-#define DEMO_MOTOR_TOGGLE_MS  2000U  /* 换向周期 (ms) */
+#define DEMO_MOTOR_SPEED_RPM 300U  /* 换向演示速度 (RPM) */
+#define DEMO_MOTOR_TOGGLE_MS 2000U /* 换向周期 (ms) */
 
 /*****************************************************************************/
 
@@ -33,7 +31,7 @@ void arm_test(void *pvParameters);
  *
  */
 void freertos_start(void) {
-    xTaskCreate(start_task, "start_task", 128, NULL, 2, &start_task_handle);
+    xTaskCreate(start_task, "start_task", 256, NULL, 2, &start_task_handle);
     vTaskStartScheduler();
 }
 
@@ -44,18 +42,21 @@ void freertos_start(void) {
  */
 void start_task(void *pvParameters) {
     UNUSED(pvParameters);
-    taskENTER_CRITICAL();
 
-    xTaskCreate(task1, "task1", 128, NULL, 2, &task1_handle);
-    xTaskCreate(task2, "task2", 128, NULL, 2, &task2_handle);
-    xTaskCreate(task4, "task4", 128, NULL, 2, &task4_handle);
-    xTaskCreate(arm_test, "arm_test", 512, NULL, 3, &arm_test_handle);
+    if (xTaskCreate(task1, "task1", 128, NULL, 2, &task1_handle) != pdPASS) {
+        Error_Handler();
+    }
+    if (xTaskCreate(task2, "task2", 128, NULL, 2, &task2_handle) != pdPASS) {
+        Error_Handler();
+    }
+    xTaskCreate(task4, "task4", 128, NULL, 2, NULL);
+    xTaskCreate(arm_test, "arm_test", 512, NULL, 3, NULL);
 
-    vTaskSuspend(task4_handle);
-    //vTaskSuspend(arm_test_handle);
+    if (!raspi_serial_init(&huart1)) {
+        Error_Handler();
+    }
 
-    vTaskDelete(start_task_handle);
-    taskEXIT_CRITICAL();
+    vTaskDelete(NULL);
 }
 
 /**
@@ -84,19 +85,26 @@ void task1(void *pvParameters) {
 void task2(void *pvParameters) {
     UNUSED(pvParameters);
 
-    uint8_t buf[20] = {0};
-
     while (1) {
-        uint32_t len = uart_dmarx_read(&huart1, buf, sizeof(buf) - 1);
-        if (len > 0) {
-            buf[len] = '\0';
-            uart_printf(&huart1, "Received: %s.\n", buf);
-        } else {
-            printf(
-                "STM32F4xx FreeRTOS project template.Running time: %u ms. \n",
-                xTaskGetTickCount());
+        // uint32_t len = uart_dmarx_read(&huart1, buf, sizeof(buf) - 1);
+        // if (len > 0) {
+        //     buf[len] = '\0';
+        //     uart_printf(&huart1, "Received: %s.\n", buf);
+        // } else {
+        //     printf(
+        //         "STM32F4xx FreeRTOS project template.Running time: %u ms. \n",
+        //         xTaskGetTickCount());
+        // }
+
+        raspi_serial_data_t command;
+        static uint32_t last_sequence;
+
+        if (raspi_serial_get_latest(&command) &&
+            command.sequence != last_sequence) {
+            last_sequence = command.sequence;
+            send_reply("OK\n");
         }
-        vTaskDelay(1000);
+        vTaskDelay(10);
     }
 }
 
@@ -184,7 +192,8 @@ void arm_test(void *pvParameters) {
                 arm_axis_move(3, ARM_DEG_TO_PULSE(90), 100);
             } break;
 
-            default: break;
+            default:
+                break;
         }
         vTaskDelay(10);
     }

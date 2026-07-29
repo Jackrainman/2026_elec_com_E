@@ -1,0 +1,6 @@
+r
+halt
+loadfile "/home/whyyy/Desktop/2026_elec_com_E/Build/Debug/2026_elec_com_E.hex"
+r
+go
+exit

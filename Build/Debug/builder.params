@@ -58,6 +58,7 @@
         "CubeMX/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.c",
         "User/Application/Src/rtos_tasks.c",
         "User/Bsp/DJI-Motor/dji_bldc_motor.c",
+        "User/Bsp/arm/arm.c",
         "User/Bsp/bsp.c",
         "User/Bsp/can_list/can_list.c",
         "User/Bsp/core_delay/core_delay.c",

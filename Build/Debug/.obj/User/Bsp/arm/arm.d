@@ -1,5 +1,6 @@
-./Build/Debug/.obj/User/Bsp/bsp.o: User/Bsp/bsp.c User/Bsp/bsp.h \
-  CubeMX/Core/Inc/cubemx.h CubeMX/Core/Inc/dma.h CubeMX/Core/Inc/main.h \
+./Build/Debug/.obj/User/Bsp/arm/arm.o: User/Bsp/arm/arm.c \
+  User/Bsp/arm/arm.h User/Bsp/emm42/emm42.h CubeMX/Core/Inc/cubemx.h \
+  CubeMX/Core/Inc/dma.h CubeMX/Core/Inc/main.h \
   CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h \
   CubeMX/Core/Inc/stm32g4xx_hal_conf.h \
   CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_rcc.h \
@@ -26,7 +27,13 @@
   CubeMX/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
   CubeMX/Core/Inc/fdcan.h CubeMX/Core/Inc/gpio.h \
   CubeMX/Core/Inc/stm32g4xx_it.h CubeMX/Core/Inc/usart.h \
-  User/Bsp/emm42/emm42.h User/Bsp/./core_delay/core_delay.h \
-  User/Bsp/./usart_ex/usart_ex.h User/Bsp/./can_list/can_list.h \
-  User/Bsp/./DJI-Motor/dji_bldc_motor.h User/Bsp/./arm/arm.h \
-  User/Bsp/./raspi_serial/raspi_serial.h
+  User/Bsp/usart_ex/usart_ex.h \
+  User/Middlewares/FreeRTOS/include/FreeRTOS.h \
+  User/Application/Inc/FreeRTOSConfig.h \
+  User/Middlewares/FreeRTOS/include/projdefs.h \
+  User/Middlewares/FreeRTOS/include/portable.h \
+  User/Middlewares/FreeRTOS/include/deprecated_definitions.h \
+  User/Middlewares/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h \
+  User/Middlewares/FreeRTOS/include/mpu_wrappers.h \
+  User/Middlewares/FreeRTOS/include/task.h \
+  User/Middlewares/FreeRTOS/include/list.h

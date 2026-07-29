@@ -322,7 +322,11 @@ void USART1_IRQHandler(void)
 void UART4_IRQHandler(void)
 {
   /* USER CODE BEGIN UART4_IRQn 0 */
-
+    if (__HAL_UART_GET_FLAG(&huart4, UART_FLAG_IDLE) &&
+        (huart4.ReceptionType != HAL_UART_RECEPTION_TOIDLE)) {
+        __HAL_UART_CLEAR_IDLEFLAG(&huart4);
+        uart_dmarx_idle_callback(&huart4);
+    }
   /* USER CODE END UART4_IRQn 0 */
   HAL_UART_IRQHandler(&huart4);
   /* USER CODE BEGIN UART4_IRQn 1 */

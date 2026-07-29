@@ -28,4 +28,5 @@
   CubeMX/Core/Inc/gpio.h User/Bsp/bsp.h CubeMX/Core/Inc/cubemx.h \
   CubeMX/Core/Inc/stm32g4xx_it.h User/Bsp/emm42/emm42.h \
   User/Bsp/./core_delay/core_delay.h User/Bsp/./usart_ex/usart_ex.h \
-  User/Bsp/./can_list/can_list.h User/Bsp/./DJI-Motor/dji_bldc_motor.h
+  User/Bsp/./can_list/can_list.h User/Bsp/./DJI-Motor/dji_bldc_motor.h \
+  User/Bsp/./arm/arm.h User/Bsp/./raspi_serial/raspi_serial.h
