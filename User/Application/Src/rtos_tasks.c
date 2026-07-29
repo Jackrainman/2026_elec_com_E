@@ -220,21 +220,17 @@ void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(2, t1_y, 50, 5000);
             arm_wait_axis_done(3, t1_r, 50, 5000);
 
-            /* —— 第二段：绝对位置 (X1, Y1, R1) —— */
+            /* —— 第二段：绝对位置 (仅 X1, Y1，R 轴不动) —— */
             uint32_t t2_x = ARM_X_MM_TO_PULSE(command.x1);
             uint32_t t2_y = ARM_Y_MM_TO_PULSE(command.y1);
-            uint32_t t2_r = ARM_DEG_TO_PULSE(command.a);
 
             arm_axis_move(1, t2_x, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
             arm_axis_move(2, t2_y, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(3, t2_r, 0);
-            vTaskDelay(pdMS_TO_TICKS(20));
 
             arm_wait_axis_done(1, t2_x, 50, 5000);
             arm_wait_axis_done(2, t2_y, 50, 5000);
-            arm_wait_axis_done(3, t2_r, 50, 5000);
 
             send_reply("OK\n");
             /* 本轮完成，轮次递减 */
