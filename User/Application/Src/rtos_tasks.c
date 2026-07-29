@@ -58,6 +58,7 @@ void start_task(void *pvParameters) {
     xTaskCreate(msg_receive, "msg_receive", 256, NULL, 3, &msg_receive_handle);
     xTaskCreate(arm_ctrl, "arm_ctrl", 512, NULL, 3, &arm_ctrl_handle);
 
+    // vtasksuspend(task2_handle);
     // vTaskSuspend(task4_handle);
     // vTaskSuspend(arm_test_handle);
     vTaskSuspend(msg_receive_handle);
@@ -77,11 +78,10 @@ void task1(void *pvParameters) {
     UNUSED(pvParameters);
 
     LED0_OFF();
-    LED1_ON();
+    LED1_OFF();
 
     while (1) {
         LED0_TOGGLE();
-        LED1_TOGGLE();
         vTaskDelay(1000);
     }
 }
@@ -223,7 +223,7 @@ void msg_receive(void *pvParameters) {
         if (raspi_serial_get_latest(&command) &&
             command.sequence != last_sequence) {
             last_sequence = command.sequence;
-
+            send_reply("OK\n");
             /* 通知 arm_ctrl 有新坐标 */
             xTaskNotifyGive(arm_ctrl_handle);
         }
@@ -243,13 +243,15 @@ void arm_ctrl(void *pvParameters) {
     raspi_serial_data_t command;
     raspi_serial_data_t last = {0};
     bool first = true;
-    uint8_t a = 4;  /* 轮次计数器，跑4轮后停止 */
+    int rounds = 0;  /* 上位机传入的轮次 */
 
     while (1) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         if (raspi_serial_get_latest(&command)) {
+            /* 首次收到数据时从 command.a 读取总轮数 */
             if (first) {
+                rounds = (int)command.a;
                 last = command;
                 first = false;
                 continue;
@@ -315,16 +317,15 @@ void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(1, t2_x, 50, 5000);
             arm_wait_axis_done(2, t2_y, 50, 5000);
 
+            /* 本轮完成，轮次递减；全部完成后亮灯挂起 */
+            rounds--;
+            if (rounds <= 0) {
+                LED1_ON();
+                vTaskSuspend(NULL);
+            }
         }
         send_reply("ok");
     }
-
-    /* 4轮结束：亮灯 + 挂起 */
-    if(a == 0) {
-        LED1_ON();
-        vTaskSuspend(NULL);
-    }
-    
 }
 
 #ifdef configASSERT
