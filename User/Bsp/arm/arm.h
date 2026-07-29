@@ -37,12 +37,19 @@ extern "C" {
 #define ARM_Y_MM_PER_REV    40.0f   /*!< YÖáË¿¸Ëµ¼³Ì mm/È¦  */
 #define ARM_R_MM_PER_REV    40.0f   /*!< RÖáË¿¸Ëµ¼³Ì mm/È¦  */
 
-/* ¾àÀë ¡ú Âö³å */
+/* ¾àÀë ¡ú Âö³å£¨ÎÞ·ûºÅ£¬¾ø¶ÔÎ»ÖÃÓÃ£© */
 #define ARM_X_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
 #define ARM_Y_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
 #define ARM_R_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_R_MM_PER_REV * (float)ARM_PULSE_PER_REV))
-/* ½Ç¶È ¡ú Âö³å */
+/* ½Ç¶È ¡ú Âö³å£¨ÎÞ·ûºÅ£© */
 #define ARM_DEG_TO_PULSE(deg) ((uint32_t)((float)(deg) / 360.0f * (float)ARM_PULSE_PER_REV))
+
+/* ¾àÀë ¡ú Âö³å£¨ÓÐ·ûºÅ£¬Ïà¶ÔÎ»ÖÃÓÃ£© */
+#define ARM_X_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_Y_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_R_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_R_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+/* ½Ç¶È ¡ú Âö³å£¨ÓÐ·ûºÅ£© */
+#define ARM_DEG_TO_PULSE_S(deg) ((int32_t)((float)(deg) / 360.0f * (float)ARM_PULSE_PER_REV))
 
 /* ·½Ïò¶¨Òå£¨Óë emm42 Ò»ÖÂ: 0=CW, 1=CCW£© */
 #define ARM_DIR_CW   0

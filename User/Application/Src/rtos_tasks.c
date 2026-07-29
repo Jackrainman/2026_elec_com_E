@@ -140,7 +140,7 @@ void task4(void *pvParameters) {
 
 /**
  * @brief Arm test task: 按键控制机械臂动作
- *        X/Y 轴绝对位置, R 轴角度相对移动
+ *        X/Y/R 均使用相对移动，WKUP 回零用绝对位置
  *
  * KEY0: X/Y +5cm,  R +90°
  * KEY1: X/Y -3cm,  R -90°
@@ -160,48 +160,38 @@ void arm_test(void *pvParameters) {
         key = key_scan(0);
         switch (key) {
             case KEY0_PRESS: {
-                /* X/Y +5cm */
-                arm_update_position(1);
-                arm_axis_move(1, arm_get_position_pulse(1) + ARM_X_MM_TO_PULSE(50), 100);
+                /* X/Y +5cm, R +90° */
+                arm_axis_rel_move(1, (int32_t)ARM_X_MM_TO_PULSE(50), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_update_position(2);
-                arm_axis_move(2, arm_get_position_pulse(2) + ARM_Y_MM_TO_PULSE(50), 100);
+                arm_axis_rel_move(2, (int32_t)ARM_Y_MM_TO_PULSE(50), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* R +90° */
                 arm_axis_rel_move(3, (int32_t)ARM_DEG_TO_PULSE(90), 100);
             } break;
 
             case KEY1_PRESS: {
-                /* X/Y -3cm */
-                arm_update_position(1);
-                arm_axis_move(1, arm_get_position_pulse(1) - ARM_X_MM_TO_PULSE(30), 100);
+                /* X/Y -3cm, R -90° */
+                arm_axis_rel_move(1, -(int32_t)ARM_X_MM_TO_PULSE(30), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_update_position(2);
-                arm_axis_move(2, arm_get_position_pulse(2) - ARM_Y_MM_TO_PULSE(30), 100);
+                arm_axis_rel_move(2, -(int32_t)ARM_Y_MM_TO_PULSE(30), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* R -90° */
                 arm_axis_rel_move(3, -(int32_t)ARM_DEG_TO_PULSE(90), 100);
             } break;
 
             case KEY2_PRESS: {
-                /* X/Y +10cm */
-                arm_update_position(1);
-                arm_axis_move(1, arm_get_position_pulse(1) + ARM_X_MM_TO_PULSE(100), 100);
+                /* X/Y +10cm, R +270° */
+                arm_axis_rel_move(1, (int32_t)ARM_X_MM_TO_PULSE(100), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_update_position(2);
-                arm_axis_move(2, arm_get_position_pulse(2) + ARM_Y_MM_TO_PULSE(100), 100);
+                arm_axis_rel_move(2, (int32_t)ARM_Y_MM_TO_PULSE(100), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* R +270° */
                 arm_axis_rel_move(3, (int32_t)ARM_DEG_TO_PULSE(270), 100);
             } break;
 
             case WKUP_PRESS: {
-                /* X/Y 回零点 */
+                /* X/Y 回零点, R -180° */
                 arm_axis_move(1, 0, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
                 arm_axis_move(2, 0, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                /* R -180° */
                 arm_axis_rel_move(3, -(int32_t)ARM_DEG_TO_PULSE(180), 100);
             } break;
 
@@ -237,6 +227,7 @@ void msg_receive(void *pvParameters) {
 
 /**
  * @brief 机械臂控制任务: 等待 msg_receive 通知后执行三轴联动
+ *        移动量 = 上次坐标 − 本次坐标，先读位置再发指令，用 arm_wait_axis_done 等到
  *
  * @param pvParameters Start parameters.
  */
@@ -244,43 +235,86 @@ void arm_ctrl(void *pvParameters) {
     UNUSED(pvParameters);
 
     raspi_serial_data_t command;
+    raspi_serial_data_t last = {0};
+    bool first = true;
 
     while (1) {
-        /* 等待 msg_receive 通知 */
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-        /* 读取最新坐标 */
         if (raspi_serial_get_latest(&command)) {
-            uint32_t x_pulse  = ARM_X_MM_TO_PULSE(command.x);
-            uint32_t y_pulse  = ARM_Y_MM_TO_PULSE(command.y);
-            uint32_t r_pulse  = ARM_DEG_TO_PULSE(command.th);
-            uint32_t x1_pulse = ARM_X_MM_TO_PULSE(command.x1);
-            uint32_t y1_pulse = ARM_Y_MM_TO_PULSE(command.y1);
-            uint32_t a_pulse  = ARM_DEG_TO_PULSE(command.a);
+            if (first) {
+                last = command;
+                first = false;
+                continue;
+            }
 
-            /* 第一段: (x, y, th) */
-            arm_axis_move(1, x_pulse, 0);
+            /* 增量 = 上次 − 本次 */
+            int32_t dx  = ARM_X_MM_TO_PULSE_S(last.x  - command.x);
+            int32_t dy  = ARM_Y_MM_TO_PULSE_S(last.y  - command.y);
+            int32_t dr  = ARM_DEG_TO_PULSE_S(last.th - command.th);
+            int32_t dx1 = ARM_X_MM_TO_PULSE_S(last.x1 - command.x1);
+            int32_t dy1 = ARM_Y_MM_TO_PULSE_S(last.y1 - command.y1);
+            int32_t da  = ARM_DEG_TO_PULSE_S(last.a  - command.a);
+
+            last = command;
+
+            /* —— 先读三轴当前位置（总线空闲时查询）—— */
+            arm_update_position(1);
+            vTaskDelay(pdMS_TO_TICKS(15));
+            arm_update_position(2);
+            vTaskDelay(pdMS_TO_TICKS(15));
+            arm_update_position(3);
+            vTaskDelay(pdMS_TO_TICKS(15));
+
+            uint32_t cur1 = arm_get_position_pulse(1);
+            uint32_t cur2 = arm_get_position_pulse(2);
+            uint32_t cur3 = arm_get_position_pulse(3);
+
+            /* 第一段目标 = 当前位置 + 增量 */
+            uint32_t t1_x = (int32_t)cur1 + dx;
+            uint32_t t1_y = (int32_t)cur2 + dy;
+            uint32_t t1_r = (int32_t)cur3 + dr;
+
+            /* —— 发送第一段相对移动 —— */
+            arm_axis_rel_move(1, dx, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(2, y_pulse, 0);
+            arm_axis_rel_move(2, dy, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(3, r_pulse, 0);
+            arm_axis_rel_move(3, dr, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
 
-            arm_wait_axis_done(1, x_pulse, 10, 0);
-            arm_wait_axis_done(2, y_pulse, 10, 0);
-            arm_wait_axis_done(3, r_pulse, 10, 0);
+            /* 等到位 */
+            arm_wait_axis_done(1, t1_x, 50, 5000);
+            arm_wait_axis_done(2, t1_y, 50, 5000);
+            arm_wait_axis_done(3, t1_r, 50, 5000);
 
-            /* 第二段: (x1, y1, a) */
-            arm_axis_move(1, x1_pulse, 0);
+            /* —— 再读位置，算第二段目标 —— */
+            arm_update_position(1);
+            vTaskDelay(pdMS_TO_TICKS(15));
+            arm_update_position(2);
+            vTaskDelay(pdMS_TO_TICKS(15));
+            arm_update_position(3);
+            vTaskDelay(pdMS_TO_TICKS(15));
+
+            cur1 = arm_get_position_pulse(1);
+            cur2 = arm_get_position_pulse(2);
+            cur3 = arm_get_position_pulse(3);
+
+            uint32_t t2_x = (int32_t)cur1 + dx1;
+            uint32_t t2_y = (int32_t)cur2 + dy1;
+            uint32_t t2_r = (int32_t)cur3 + da;
+
+            /* —— 发送第二段相对移动 —— */
+            arm_axis_rel_move(1, dx1, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(2, y1_pulse, 0);
+            arm_axis_rel_move(2, dy1, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(3, a_pulse, 0);
+            arm_axis_rel_move(3, da, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
 
-            arm_wait_axis_done(1, x1_pulse, 10, 0);
-            arm_wait_axis_done(2, y1_pulse, 10, 0);
-            arm_wait_axis_done(3, a_pulse, 10, 0);
+            arm_wait_axis_done(1, t2_x, 50, 5000);
+            arm_wait_axis_done(2, t2_y, 50, 5000);
+            arm_wait_axis_done(3, t2_r, 50, 5000);
         }
     }
 }
