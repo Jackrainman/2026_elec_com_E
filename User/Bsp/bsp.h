@@ -21,6 +21,7 @@ extern "C" {
 #include "./can_list/can_list.h"
 #include "./DJI-Motor/dji_bldc_motor.h"
 #include "./arm/arm.h"
+#include "raspi_serial/raspi_serial.h"
 
 
 void bsp_init(void);

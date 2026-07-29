@@ -23,6 +23,12 @@ void task4(void *pvParameters);
 static TaskHandle_t arm_test_handle;
 void arm_test(void *pvParameters);
 
+static TaskHandle_t msg_receive_handle;
+void msg_receive(void *pvParameters);
+
+static TaskHandle_t arm_ctrl_handle;
+void arm_ctrl(void *pvParameters);
+
 #define DEMO_MOTOR_SPEED_RPM  300U   /* 换向演示速度 (RPM) */
 #define DEMO_MOTOR_TOGGLE_MS  2000U  /* 换向周期 (ms) */
 
@@ -50,9 +56,13 @@ void start_task(void *pvParameters) {
     xTaskCreate(task2, "task2", 128, NULL, 2, &task2_handle);
     xTaskCreate(task4, "task4", 128, NULL, 2, &task4_handle);
     xTaskCreate(arm_test, "arm_test", 512, NULL, 3, &arm_test_handle);
+    xTaskCreate(msg_receive, "msg_receive", 256, NULL, 3, &msg_receive_handle);
+    xTaskCreate(arm_ctrl, "arm_ctrl", 512, NULL, 3, &arm_ctrl_handle);
 
     vTaskSuspend(task4_handle);
     //vTaskSuspend(arm_test_handle);
+
+    raspi_serial_init(&huart1);
 
     vTaskDelete(start_task_handle);
     taskEXIT_CRITICAL();
@@ -147,6 +157,7 @@ void arm_test(void *pvParameters) {
     key_press_t key;
 
     while (1) {
+        /* 按键控制 */
         key = key_scan(0);
         switch (key) {
             case KEY0_PRESS: {
@@ -186,7 +197,81 @@ void arm_test(void *pvParameters) {
 
             default: break;
         }
+
         vTaskDelay(10);
+    }
+}
+
+/**
+ * @brief 消息接收任务: 轮询树莓派串口坐标数据, 通知 arm_ctrl 处理
+ *
+ * @param pvParameters Start parameters.
+ */
+void msg_receive(void *pvParameters) {
+    UNUSED(pvParameters);
+
+    raspi_serial_data_t command;
+    static uint32_t last_sequence;
+
+    while (1) {
+        if (raspi_serial_get_latest(&command) &&
+            command.sequence != last_sequence) {
+            last_sequence = command.sequence;
+
+            /* 通知 arm_ctrl 有新坐标 */
+            xTaskNotifyGive(arm_ctrl_handle);
+        }
+        vTaskDelay(10);
+    }
+}
+
+/**
+ * @brief 机械臂控制任务: 等待 msg_receive 通知后执行三轴联动
+ *
+ * @param pvParameters Start parameters.
+ */
+void arm_ctrl(void *pvParameters) {
+    UNUSED(pvParameters);
+
+    raspi_serial_data_t command;
+
+    while (1) {
+        /* 等待 msg_receive 通知 */
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        /* 读取最新坐标 */
+        if (raspi_serial_get_latest(&command)) {
+            uint32_t x_pulse  = ARM_MM_TO_PULSE(command.x);
+            uint32_t y_pulse  = ARM_MM_TO_PULSE(command.y);
+            uint32_t r_pulse  = ARM_DEG_TO_PULSE(command.th);
+            uint32_t x1_pulse = ARM_MM_TO_PULSE(command.x1);
+            uint32_t y1_pulse = ARM_MM_TO_PULSE(command.y1);
+            uint32_t a_pulse  = ARM_DEG_TO_PULSE(command.a);
+
+            /* 第一段: (x, y, th) */
+            arm_axis_move(1, x_pulse, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+            arm_axis_move(2, y_pulse, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+            arm_axis_move(3, r_pulse, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+
+            arm_wait_axis_done(1, x_pulse, 10, 0);
+            arm_wait_axis_done(2, y_pulse, 10, 0);
+            arm_wait_axis_done(3, r_pulse, 10, 0);
+
+            /* 第二段: (x1, y1, a) */
+            arm_axis_move(1, x1_pulse, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+            arm_axis_move(2, y1_pulse, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+            arm_axis_move(3, a_pulse, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+
+            arm_wait_axis_done(1, x1_pulse, 10, 0);
+            arm_wait_axis_done(2, y1_pulse, 10, 0);
+            arm_wait_axis_done(3, a_pulse, 10, 0);
+        }
     }
 }
 

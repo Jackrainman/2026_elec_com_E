@@ -18,8 +18,8 @@
 #include "usart_ex/usart_ex.h"
 
 #define READ_SIZE       64U
-#define TASK_STACK      384U
-#define TASK_PRIORITY   4U
+#define TASK_STACK      256U
+#define TASK_PRIORITY   2U
 #define POLL_TIME_MS    2U
 #define VALUE_COUNT     6U
 
