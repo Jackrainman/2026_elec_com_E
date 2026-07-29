@@ -17,8 +17,10 @@ void task1(void *pvParameters);
 static TaskHandle_t task2_handle;
 void task2(void *pvParameters);
 
+static TaskHandle_t task4_handle;
 void task4(void *pvParameters);
 
+static TaskHandle_t arm_test_handle;
 void arm_test(void *pvParameters);
 
 static TaskHandle_t msg_receive_handle;
@@ -51,12 +53,12 @@ void start_task(void *pvParameters) {
 
     xTaskCreate(task1, "task1", 128, NULL, 2, &task1_handle);
     xTaskCreate(task2, "task2", 128, NULL, 2, &task2_handle);
-    xTaskCreate(task4, "task4", 128, NULL, 2, &task4_handle);
+    // xTaskCreate(task4, "task4", 128, NULL, 2, &task4_handle);
     xTaskCreate(arm_test, "arm_test", 512, NULL, 3, &arm_test_handle);
     xTaskCreate(msg_receive, "msg_receive", 256, NULL, 3, &msg_receive_handle);
     xTaskCreate(arm_ctrl, "arm_ctrl", 512, NULL, 3, &arm_ctrl_handle);
 
-    vTaskSuspend(task4_handle);
+    // vTaskSuspend(task4_handle);
     //vTaskSuspend(arm_test_handle);
     vTaskSuspend(msg_receive_handle);
     vTaskSuspend(arm_ctrl_handle);
