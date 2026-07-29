@@ -21,6 +21,7 @@ virtualFolder:
         - path: User/Bsp/atk_smd/smd.c
         - path: User/Bsp/atk_smd/smd_usart.c
         - path: User/Bsp/arm/arm.c
+        - path: User/Bsp/raspi_serial/raspi_serial.c
       folders: []
     - name: Application
       files:

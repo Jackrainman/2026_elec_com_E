@@ -14,8 +14,17 @@ void start_task(void *pvParameters);
 static TaskHandle_t task1_handle;
 void task1(void *pvParameters);
 
+static TaskHandle_t task2_handle;
+void task2(void *pvParameters);
+
 static TaskHandle_t arm_test_handle;
 void arm_test(void *pvParameters);
+
+static TaskHandle_t msg_receive_handle;
+void msg_receive(void *pvParameters);
+
+static TaskHandle_t arm_ctrl_handle;
+void arm_ctrl(void *pvParameters);
 
 /*****************************************************************************/
 
@@ -37,10 +46,17 @@ void start_task(void *pvParameters) {
     UNUSED(pvParameters);
     taskENTER_CRITICAL();
 
-    smd_usart_recv_init();
-
     xTaskCreate(task1, "task1", 128, NULL, 2, &task1_handle);
+    xTaskCreate(task2, "task2", 128, NULL, 2, &task2_handle);
     xTaskCreate(arm_test, "arm_test", 512, NULL, 3, &arm_test_handle);
+    xTaskCreate(msg_receive, "msg_receive", 256, NULL, 3, &msg_receive_handle);
+    xTaskCreate(arm_ctrl, "arm_ctrl", 512, NULL, 3, &arm_ctrl_handle);
+
+    // vTaskSuspend(arm_test_handle);
+    // vTaskSuspend(msg_receive_handle);
+    // vTaskSuspend(arm_ctrl_handle);
+
+    raspi_serial_init(&huart1);
 
     vTaskDelete(start_task_handle);
     taskEXIT_CRITICAL();
@@ -55,104 +71,186 @@ void task1(void *pvParameters) {
     UNUSED(pvParameters);
 
     LED0_OFF();
-    LED1_ON();
+    LED1_OFF();
 
     while (1) {
         LED0_TOGGLE();
-        LED1_TOGGLE();
         vTaskDelay(1000);
     }
 }
 
-/* ======================== 机械臂测试任务 ======================== */
-
-/* 测试用运动参数 */
-#define TEST_SPEED      60      /* 测试转速 RPM */
-#define TEST_XY_DELTA   50.0f   /* XY轴测试移动量 mm */
-#define TEST_XY_SMALL   30.0f   /* XY轴小移动量 mm */
-#define TEST_R_DELTA    90.0f   /* R轴测试旋转角度 ° */
-#define TEST_R_SMALL    45.0f   /* R轴小旋转角度 ° */
-
 /**
- * @brief  等待指定轴到位
- * @param  axis  轴编号
- * @note   阻塞式轮询，超时约 5s
+ * @brief Task2: print running time.
+ *
+ * @param pvParameters Start parameters.
  */
-static void arm_wait_axis(uint8_t axis)
-{
-    uint32_t timeout = 5000 / 10;  /* 5s / 10ms = 500次 */
-    arm_is_arrived(axis);           /* 发送首次查询 */
-    while (timeout--) {
-        vTaskDelay(pdMS_TO_TICKS(10));
-        if (arm_is_arrived(axis)) {
-            break;
-        }
+void task2(void *pvParameters) {
+    UNUSED(pvParameters);
+
+    while (1) {
+        printf("STM32G4xx FreeRTOS project template. Running time: %u ms. \n",
+               xTaskGetTickCount());
+        vTaskDelay(1000);
     }
 }
 
 /**
- * @brief  机械臂测试任务
- * @note   KEY0 → 回零
- *         KEY1 → XY 顺序移动
- *         KEY2 → R轴自转90°
- *         KEY3(WAKEUP) → XYR 顺序旋转
+ * @brief Arm test task: 按键控制机械臂动作（绝对位置）
+ *
+ * KEY0: X/Y/R 目标位置 (50mm, 50mm, 90°)
+ * KEY1: X/Y/R 目标位置 (30mm, 30mm, 0°)
+ * KEY2: X/Y/R 目标位置 (100mm, 100mm, 270°)
+ * WKUP: X/Y/R 回零 (0, 0, 0)
+ *
+ * @param pvParameters Start parameters.
  */
 void arm_test(void *pvParameters) {
     UNUSED(pvParameters);
 
-    key_press_t key;
-
-    /* 初始化机械臂 */
     arm_init();
-    vTaskDelay(pdMS_TO_TICKS(100));
+
+    key_press_t key;
 
     while (1) {
         key = key_scan(0);
-
         switch (key) {
-        case KEY0_PRESS:
-            arm_set_zero();
-            LED0_ON();
-            vTaskDelay(pdMS_TO_TICKS(200));
-            LED0_OFF();
-            break;
+            case KEY0_PRESS: {
+                arm_axis_move(1, ARM_X_MM_TO_PULSE(50), 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                arm_axis_move(2, ARM_Y_MM_TO_PULSE(50), 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                arm_axis_move(3, ARM_DEG_TO_PULSE(90), 100);
+            } break;
 
-        case KEY1_PRESS:
-            /* XY 顺序移动 */
-            arm_axis_rel_move(0,  TEST_XY_DELTA, TEST_SPEED);  /* X */
-            arm_wait_axis(0);
-            arm_axis_rel_move(1,  TEST_XY_DELTA, TEST_SPEED);  /* Y */
-            arm_wait_axis(1);
-            break;
+            case KEY1_PRESS: {
+                arm_axis_move(1, ARM_X_MM_TO_PULSE(30), 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                arm_axis_move(2, ARM_Y_MM_TO_PULSE(30), 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                arm_axis_move(3, 0, 100);
+            } break;
 
-        case KEY2_PRESS:
-            /* R轴自转90° */
-            arm_axis_rel_move(2, TEST_R_DELTA, TEST_SPEED);
-            arm_wait_axis(2);
-            break;
+            case KEY2_PRESS: {
+                arm_axis_move(1, ARM_X_MM_TO_PULSE(100), 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                arm_axis_move(2, ARM_Y_MM_TO_PULSE(100), 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                arm_axis_move(3, ARM_DEG_TO_PULSE(270), 100);
+            } break;
 
-        case WKUP_PRESS:
-            /* XYR 顺序旋转 */
-            arm_axis_rel_move(0,  TEST_XY_SMALL, TEST_SPEED);  /* X */
-            arm_wait_axis(0);
-            arm_axis_rel_move(1,  TEST_XY_SMALL, TEST_SPEED);  /* Y */
-            arm_wait_axis(1);
-            arm_axis_rel_move(2,  TEST_R_SMALL, TEST_SPEED);   /* R */
-            arm_wait_axis(2);
-            break;
+            case WKUP_PRESS: {
+                arm_axis_move(1, 0, 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                arm_axis_move(2, 0, 100);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                arm_axis_move(3, 0, 100);
+            } break;
 
-        default:
-            break;
+            default:
+                break;
         }
 
-        vTaskDelay(pdMS_TO_TICKS(20));
+        vTaskDelay(10);
+    }
+}
+
+/**
+ * @brief 消息接收任务: 轮询树莓派串口坐标数据, 通知 arm_ctrl 处理
+ *
+ * @param pvParameters Start parameters.
+ */
+void msg_receive(void *pvParameters) {
+    UNUSED(pvParameters);
+
+    raspi_serial_data_t command;
+    static uint32_t last_sequence;
+
+    while (1) {
+        if (raspi_serial_get_latest(&command) &&
+            command.sequence != last_sequence) {
+            last_sequence = command.sequence;
+            send_reply("OK\n");
+            /* 通知 arm_ctrl 有新坐标 */
+            xTaskNotifyGive(arm_ctrl_handle);
+        }
+        vTaskDelay(10);
+    }
+}
+
+/**
+ * @brief 机械臂控制任务: 等待 msg_receive 通知后执行两段绝对位置移动
+ *        树莓派下发物理坐标（mm/°），直接转为脉冲后下发
+ *
+ * @param pvParameters Start parameters.
+ */
+void arm_ctrl(void *pvParameters) {
+    UNUSED(pvParameters);
+
+    raspi_serial_data_t command;
+    static uint32_t last_sequence;
+    bool first = true;
+    int rounds = 0;  /* 上位机传入的剩余轮次 */
+
+    while (1) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        if (raspi_serial_get_latest(&command) &&
+            command.sequence != last_sequence) {
+            last_sequence = command.sequence;
+
+            /* 首次收到数据时从 command.a 读取总轮数 */
+            if (first) {
+                rounds = (int)command.a;
+                first = false;
+            }
+
+            /* —— 第一段：绝对位置 (X, Y, R) —— */
+            uint32_t t1_x = ARM_X_MM_TO_PULSE(command.x);
+            uint32_t t1_y = ARM_Y_MM_TO_PULSE(command.y);
+            uint32_t t1_r = ARM_DEG_TO_PULSE(command.th);
+
+            arm_axis_move(1, t1_x, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+            arm_axis_move(2, t1_y, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+            arm_axis_move(3, t1_r, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+
+            arm_wait_axis_done(1, t1_x, 50, 5000);
+            arm_wait_axis_done(2, t1_y, 50, 5000);
+            arm_wait_axis_done(3, t1_r, 50, 5000);
+
+            /* —— 第二段：绝对位置 (X1, Y1, R1) —— */
+            uint32_t t2_x = ARM_X_MM_TO_PULSE(command.x1);
+            uint32_t t2_y = ARM_Y_MM_TO_PULSE(command.y1);
+            uint32_t t2_r = ARM_DEG_TO_PULSE(command.a);
+
+            arm_axis_move(1, t2_x, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+            arm_axis_move(2, t2_y, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+            arm_axis_move(3, t2_r, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+
+            arm_wait_axis_done(1, t2_x, 50, 5000);
+            arm_wait_axis_done(2, t2_y, 50, 5000);
+            arm_wait_axis_done(3, t2_r, 50, 5000);
+
+            send_reply("OK\n");
+            /* 本轮完成，轮次递减 */
+            rounds--;
+            if (rounds <= 0) {
+                LED1_ON();
+                first = true;  /* 等待下一轮命令时重新读取 rounds */
+            }
+        }
     }
 }
 
 #ifdef configASSERT
 /**
- * @brief FreeRTOS assert failed function. 
- * 
+ * @brief FreeRTOS assert failed function.
+ *
  * @param pcFile File name
  * @param ulLine File line
  */
@@ -178,7 +276,7 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
 #if configUSE_MALLOC_FAILED_HOOK
 /**
  * @brief This hook function is called when allocation failed.
- * 
+ *
  */
 void vApplicationMallocFailedHook(void) {
     fprintf(stderr, "FreeRTOS malloc failed! \n");

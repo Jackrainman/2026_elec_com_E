@@ -1,12 +1,12 @@
 /**
  ****************************************************************************************************
  * @file        arm.h
- * @brief       三电机滑轨机械臂控制模块
- *              - X轴 / Y轴 平面直线运动
+ * @brief       三轴机械臂控制模块 (基于正点原子 SMD 步进电机)
+ *              - X轴 / Y轴 平面运动
  *              - R轴 末端自转
- *              - 基于正点原子 SMD 步进电机驱动
  * @note        轴编号约定：
- *              1: X轴（左右）, 2: Y轴（前后）, 3: R轴（自转）
+ *              1: X轴, 2: Y轴, 3: R轴（自转）
+ *              所有电机共用一路串口总线
  ****************************************************************************************************
  */
 
@@ -25,87 +25,82 @@ extern "C" {
 #define ARM_MOTOR_Y_ADDR    2   /* Y轴电机地址 */
 #define ARM_MOTOR_R_ADDR    3   /* R轴（自转）电机地址 */
 
-/* ========================== 机械参数 ========================== */
-/* 51200 脉冲 = 1 转（电机细分设置） */
-#define ARM_PULSE_PER_REV   51200
-
-/* 各轴导程 / 传动比：脉冲当量 = pulses / mm */
-/* 用户按实际丝杆导程、同步轮减速比修改以下宏 */
-#define ARM_X_PULSE_PER_MM  512.0f   /* X轴：每毫米对应脉冲数 */
-#define ARM_Y_PULSE_PER_MM  512.0f   /* Y轴：每毫米对应脉冲数 */
-#define ARM_R_PULSE_PER_DEG 142.22f  /* R轴：每度对应脉冲数 (51200/360) */
-
 /* ========================== 默认运动参数 ========================== */
 #define ARM_DEFAULT_SPEED   60      /* 默认转速 RPM */
 #define ARM_DEFAULT_ACC     1       /* 默认加速度档位 */
-#define ARM_HOMING_SPEED    30      /* 回零转速 RPM */
 
-/* 方向定义（与电机驱动一致） */
-#define ARM_DIR_CW   0   /* 正转 */
-#define ARM_DIR_CCW  1   /* 反转 */
+/* 细分: 51200 脉冲/圈（按实际电机细分设置修改） */
+#define ARM_PULSE_PER_REV   51200U
 
-/* ========================== 软限位（单位：脉冲） ========================== */
-/* 设为 0 则不启用限位检查 */
-#define ARM_X_LIMIT_MIN  0
-#define ARM_X_LIMIT_MAX  0
-#define ARM_Y_LIMIT_MIN  0
-#define ARM_Y_LIMIT_MAX  0
+/* ========================== 单位换算 ========================== */
+#define ARM_X_MM_PER_REV    40.0f   /*!< X轴丝杆导程 mm/圈  */
+#define ARM_Y_MM_PER_REV    40.0f   /*!< Y轴丝杆导程 mm/圈  */
+#define ARM_DEG_PER_REV     360.0f  /*!< 角度 °/圈         */
+
+/* 距离 → 脉冲（无符号，绝对位置用） */
+#define ARM_X_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_Y_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+/* 角度 → 脉冲（无符号） */
+#define ARM_DEG_TO_PULSE(deg)  ((uint32_t)((float)(deg) / ARM_DEG_PER_REV * (float)ARM_PULSE_PER_REV))
+
+/* 距离 → 脉冲（有符号，相对位置用） */
+#define ARM_X_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_Y_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+/* 角度 → 脉冲（有符号） */
+#define ARM_DEG_TO_PULSE_S(deg)  ((int32_t)((float)(deg) / ARM_DEG_PER_REV * (float)ARM_PULSE_PER_REV))
+
+/* 方向定义（与 SMD 驱动一致: 0=CW, 1=CCW） */
+#define ARM_DIR_CW   0
+#define ARM_DIR_CCW  1
 
 /* ========================== API ========================== */
 
 /**
  * @brief  初始化机械臂（使能全部电机并设为位置模式）
- * @note   需先调用 smd_motor_init() 为每个电机注册 smd_motor_t
  */
 void arm_init(void);
 
 /**
- * @brief  控制 XY 两轴移动到绝对位置（mm），R轴不动
- * @param  x_mm    X轴目标位置（mm）
- * @param  y_mm    Y轴目标位置（mm）
- * @param  speed   转速（RPM），填0则使用默认值
+ * @brief  单轴绝对移动（相对坐标零点）
+ * @param  axis   轴编号：1=X, 2=Y, 3=R
+ * @param  pulse  目标脉冲数
+ * @param  speed  转速（RPM），填0则使用默认值
  */
-void arm_move_to(float x_mm, float y_mm, uint16_t speed);
-
-/**
- * @brief  控制 XYR 三轴移动到绝对位置
- * @param  x_mm    X轴目标位置（mm）
- * @param  y_mm    Y轴目标位置（mm）
- * @param  r_deg   R轴目标角度（°）
- * @param  speed   转速（RPM），填0则使用默认值
- */
-void arm_move_to_all(float x_mm, float y_mm, float r_deg, uint16_t speed);
-
-/**
- * @brief  单轴移动到绝对位置（mm 或 °）
- * @param  axis    轴编号：1=X, 2=Y, 3=R
- * @param  pos     目标位置（X/Y为mm，R为°）
- * @param  speed   转速（RPM），填0则使用默认值
- */
-void arm_axis_move(uint8_t axis, float pos, uint16_t speed);
+void arm_axis_move(uint8_t axis, uint32_t pulse, uint16_t speed);
 
 /**
  * @brief  单轴相对移动
- * @param  axis    轴编号
- * @param  delta   增量（X/Y为mm，R为°）
- * @param  speed   转速（RPM），填0则使用默认值
+ * @param  axis   轴编号
+ * @param  pulse  相对脉冲数 (正 CW / 负 CCW)
+ * @param  speed  转速（RPM），填0则使用默认值
  */
-void arm_axis_rel_move(uint8_t axis, float delta, uint16_t speed);
+void arm_axis_rel_move(uint8_t axis, int32_t pulse, uint16_t speed);
 
 /**
- * @brief  查询指定轴是否到位
- * @param  axis    轴编号：1=X, 2=Y, 3=R
- * @retval 0=未到位, 1=已到位
- * @note   会触发一次查询指令，建议调用间隔 >5ms
+ * @brief  估算单轴移动耗时
+ * @param  pulse  移动脉冲数
+ * @param  speed  转速（RPM）
+ * @return 预估耗时（ms），已含加减速余量
  */
-uint8_t arm_is_arrived(uint8_t axis);
+uint32_t arm_est_move_ms(uint32_t pulse, uint16_t speed);
 
 /**
- * @brief  R轴自转指定角度（相对）
- * @param  deg     旋转角度（°），正为CW，负为CCW
- * @param  speed   转速（RPM），填0则使用默认值
+ * @brief  查询并更新指定轴的实时位置（阻塞约 5ms）
+ * @note   通过串口主动查询电机位置
+ * @param  axis  轴编号
  */
-void arm_rotate(float deg, uint16_t speed);
+void arm_update_position(uint8_t axis);
+
+/**
+ * @brief  等待指定轴运动到位（阻塞式，主动查询位置）
+ * @param  axis       轴编号
+ * @param  target     目标脉冲数
+ * @param  tolerance  到位容差（脉冲数），建议 50 ~ 200
+ * @param  timeout_ms 超时（ms），填 0 则永不超时
+ * @return true=到位, false=超时
+ */
+bool arm_wait_axis_done(uint8_t axis, uint32_t target, uint32_t tolerance,
+                        uint32_t timeout_ms);
 
 /**
  * @brief  急停（全部电机立即刹车）
@@ -114,17 +109,25 @@ void arm_emergency_stop(void);
 
 /**
  * @brief  使能 / 失能全部电机
- * @param  en  0=使能, 1=失能
+ * @param  en  true=锁轴使能, false=松轴
  */
-void arm_enable_all(uint8_t en);
+void arm_enable_all(bool en);
 
 /**
  * @brief  使能 / 失能指定轴
  */
-void arm_enable_axis(uint8_t axis, uint8_t en);
+void arm_enable_axis(uint8_t axis, bool en);
 
 /**
- * @brief  将全部轴当前位置清零（设为原点）
+ * @brief  读取指定轴当前位置（脉冲数）
+ * @note   需先调用 arm_update_position() 刷新位置
+ * @param  axis  轴编号
+ * @return 当前位置脉冲数
+ */
+uint32_t arm_get_position_pulse(uint8_t axis);
+
+/**
+ * @brief  将全部轴当前位置清零（设为坐标原点）
  */
 void arm_set_zero(void);
 
