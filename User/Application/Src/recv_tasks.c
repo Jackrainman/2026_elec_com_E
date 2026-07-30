@@ -81,10 +81,7 @@ void arm_ctrl(void *pvParameters) {
     while (1) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-        if (raspi_serial_get_latest(&command) &&
-            command.sequence != last_sequence) {
-            last_sequence = command.sequence;
-
+        if (raspi_serial_get_latest(&command)) {
             /* 首次收到数据时从 command.a 读取总轮数 */
             if (first) {
                 rounds = (int)command.a;
@@ -102,6 +99,17 @@ void arm_ctrl(void *pvParameters) {
 
             arm_wait_axis_done(1, t1_x, 200, 5000);
             arm_wait_axis_done(2, t1_y, 200, 5000);
+
+            /* 第一个坐标到位 → 开气泵，1s 后关 */
+            PUMP_ON();
+            E_PUMP_ON();
+            {
+                TickType_t xPumpTick = xTaskGetTickCount();
+                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(1000)) {
+                    vTaskDelay(1);
+                }
+            }
+            E_PUMP_OFF();
 
             /* —— 第二段：绝对位置 (X1, Y1)，R 轴相对移动，叠加相机偏移 —— */
             uint32_t t2_x = ARM_X_MM_TO_PULSE(command.x1 + CAM_X_CORRECT);
@@ -122,6 +130,23 @@ void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(1, t2_x, 200, 5000);
             arm_wait_axis_done(2, t2_y, 200, 5000);
             arm_wait_axis_done(3, r_expected, 200, 5000);
+
+            /* 第二个坐标到位 → 开气泵，1s 后关 */
+            E_PUMP_ON();
+            {
+                TickType_t xPumpTick = xTaskGetTickCount();
+                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(1000)) {
+                    vTaskDelay(1);
+                }
+            }
+            PUMP_OFF();
+            {
+                TickType_t xPumpTick = xTaskGetTickCount();
+                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(1000)) {
+                    vTaskDelay(1);
+                }
+            }
+            E_PUMP_OFF();
 
             send_reply("OK\n");
             /* 本轮完成，轮次递减 */
