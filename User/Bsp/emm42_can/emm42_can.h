@@ -33,6 +33,12 @@ extern "C" {
 /* 最多支持电机数量, 地址范围 0 - 255, 0 为广播地址 */
 #define EMM42_CAN_MOTOR_NUM_MAX 255
 
+/* 电机整步步数/圈 (1.8° 电机为 200), 用于角度-脉冲换算 */
+#define EMM42_CAN_STEPS_PER_REV 200
+
+/* 出厂默认细分 (16 细分 = 3200 脉冲/圈) */
+#define EMM42_CAN_DEFAULT_MICROSTEP 16
+
 #define EMM42_CAN_MASK_SPEED        (1UL << 0) /*!< 转速有更新 */
 #define EMM42_CAN_MASK_REAL_POS     (1UL << 1) /*!< 实时位置有更新 */
 #define EMM42_CAN_MASK_POS_ERR      (1UL << 2) /*!< 位置误差有更新 */
@@ -162,6 +168,9 @@ typedef struct {
 typedef struct {
     can_selected_t can_select; /*!< 选择 CAN 通信 */
     uint8_t addr;              /*!< 电机地址 1-255, 0 为广播地址 */
+
+    uint16_t microstep; /*!< 当前细分 (1-256), 供角度-脉冲换算,
+                             由 `emm42_can_set_microstep` 同步更新 */
 
     uint8_t ack_status; /*!< 最近一次命令应答状态, 见 `emm42_can_ack_t` */
 

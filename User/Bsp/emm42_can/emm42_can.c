@@ -22,6 +22,10 @@
  */
 static void send_command(emm42_can_motor_t *motor, const uint8_t *buf,
                          uint16_t len) {
+    if (motor == NULL || buf == NULL || len == 0) {
+        return;
+    }
+
     uint16_t sent = 0;
     uint8_t packet = 0;
 
@@ -189,6 +193,7 @@ uint8_t emm42_can_motor_init(emm42_can_motor_t *motor,
 
     motor->can_select = can_select;
     motor->addr = addr;
+    motor->microstep = EMM42_CAN_DEFAULT_MICROSTEP;
     motor->ack_status = 0;
     motor->cur_pos = 0.0f;
     motor->cur_vel = 0.0f;
@@ -255,7 +260,8 @@ void emm42_can_reset_curpos_to_zero(emm42_can_motor_t *motor) {
  * @param snF 同步标志, false 立即执行 / true 缓存等待多机同步
  */
 void emm42_can_en_control(emm42_can_motor_t *motor, bool state, bool snF) {
-    uint8_t cmd[5] = {0xF3, 0xAB, (uint8_t)state, (uint8_t)snF,
+    /* 注意: 手册 V1.0.3 辅助码为 0xAB, 此处临时改为 0xF3 做通信测试 */
+    uint8_t cmd[5] = {0xF3, 0xF3, (uint8_t)state, (uint8_t)snF,
                       EMM42_CAN_CHECK_BYTE};
     send_command(motor, cmd, sizeof(cmd));
 }
@@ -288,14 +294,20 @@ void emm42_can_vel_control(emm42_can_motor_t *motor, uint8_t dir, uint16_t vel,
  * @param dir 方向, 0 = CW, 1 = CCW
  * @param vel 速度, 0 - 3000 (RPM)
  * @param acc 加速度档位, 0 - 255, 0 为直接启动
- * @param degree 目标角度, 度 (按 16 细分 3200 脉冲/圈换算)
+ * @param degree 目标角度, 度 (按句柄 `microstep` 细分换算脉冲)
  * @param mode 运动模式, 0 = 相对上一输入目标位置,
  *             1 = 相对坐标零点绝对位置, 2 = 相对当前实时位置
  * @param snF 同步标志, false 立即执行 / true 缓存等待多机同步
  */
 void emm42_can_pos_control(emm42_can_motor_t *motor, uint8_t dir, uint16_t vel,
                            uint8_t acc, float degree, uint8_t mode, bool snF) {
-    uint32_t clk = (uint32_t)(degree / 360.0f * 3200.0f);
+    if (motor == NULL) {
+        return;
+    }
+
+    float pulse_per_rev =
+        (float)EMM42_CAN_STEPS_PER_REV * (float)motor->microstep;
+    uint32_t clk = (uint32_t)(degree / 360.0f * pulse_per_rev);
 
     uint8_t cmd[12] = {0xFD,
                        dir,
@@ -545,12 +557,20 @@ void emm42_can_set_id(emm42_can_motor_t *motor, bool store, uint8_t new_id) {
 /**
  * @brief 修改细分值
  *
+ * 同步更新句柄 `microstep` 字段, `emm42_can_pos_control` 按新细分换算.
+ *
  * @param motor 电机句柄
  * @param store 是否存储
  * @param microstep 细分 1 - 255, 0 = 256 细分
  */
 void emm42_can_set_microstep(emm42_can_motor_t *motor, bool store,
                              uint8_t microstep) {
+    if (motor == NULL) {
+        return;
+    }
+
+    motor->microstep = (microstep == 0) ? 256 : microstep;
+
     uint8_t cmd[5] = {0x84, 0x8A, (uint8_t)store, microstep,
                       EMM42_CAN_CHECK_BYTE};
     send_command(motor, cmd, sizeof(cmd));
