@@ -170,12 +170,12 @@ static void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(2, t2_y, 50, 5000);
 
             /* 本轮完成，轮次递减；全部完成后亮灯挂起 */
+            send_reply("ok");
             rounds--;
             if (rounds <= 0) {
                 LED1_ON();
                 vTaskSuspend(NULL);
             }
         }
-        send_reply("ok");
     }
 }
