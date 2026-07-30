@@ -12,11 +12,9 @@
 #define CAM_X_CORRECT   -13.0f
 #define CAM_Y_CORRECT   -32.0f
 
-static TaskHandle_t task2_handle;
 static TaskHandle_t msg_receive_handle;
 static TaskHandle_t arm_ctrl_handle;
 
-static void task2(void *pvParameters);
 static void msg_receive(void *pvParameters);
 static void arm_ctrl(void *pvParameters);
 
@@ -34,33 +32,11 @@ void recv_tasks_init(void) {
     raspi_serial_init(&huart1);
     arm_init(); /* arm_ctrl 依赖 */
 
-    xTaskCreate(task2, "task2", 128, NULL, 2, &task2_handle);
     xTaskCreate(msg_receive, "msg_receive", 256, NULL, 3, &msg_receive_handle);
     xTaskCreate(arm_ctrl, "arm_ctrl", 512, NULL, 3, &arm_ctrl_handle);
 
     // vTaskSuspend(msg_receive_handle);
     // vTaskSuspend(arm_ctrl_handle);
-}
-
-/**
- * @brief Task2: print running time and received data.
- *
- * @param pvParameters Start parameters.
- */
-static void task2(void *pvParameters) {
-    UNUSED(pvParameters);
-
-    while (1) {
-        raspi_serial_data_t command;
-        static uint32_t last_sequence;
-
-        if (raspi_serial_get_latest(&command) &&
-            command.sequence != last_sequence) {
-            last_sequence = command.sequence;
-            send_reply("OK\n");
-        }
-        vTaskDelay(10);
-    }
 }
 
 /**
@@ -78,7 +54,6 @@ static void msg_receive(void *pvParameters) {
         if (raspi_serial_get_latest(&command) &&
             command.sequence != last_sequence) {
             last_sequence = command.sequence;
-            send_reply("OK\n");
             /* 通知 arm_ctrl 有新坐标 */
             xTaskNotifyGive(arm_ctrl_handle);
         }
@@ -108,9 +83,7 @@ static void arm_ctrl(void *pvParameters) {
             /* 首次收到数据时从 command.a 读取总轮数 */
             if (first) {
                 rounds = (int)command.a;
-                last = command;
                 first = false;
-                continue;
             }
 
             /* 增量 = 本次 − 上次 */

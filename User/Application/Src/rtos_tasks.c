@@ -14,12 +14,6 @@ void start_task(void *pvParameters);
 static TaskHandle_t task1_handle;
 void task1(void *pvParameters);
 
-static TaskHandle_t task4_handle;
-void task4(void *pvParameters);
-
-#define DEMO_MOTOR_SPEED_RPM  300U   /* 换向演示速度 (RPM) */
-#define DEMO_MOTOR_TOGGLE_MS  2000U  /* 换向周期 (ms) */
-
 /*****************************************************************************/
 
 /**
@@ -64,32 +58,6 @@ void task1(void *pvParameters) {
     while (1) {
         LED0_TOGGLE();
         vTaskDelay(1000);
-    }
-}
-
-/**
- * @brief Task4: Emm42 motor toggle direction periodically (left/right).
- *
- * @param pvParameters Start parameters.
- */
-void task4(void *pvParameters) {
-    UNUSED(pvParameters);
-
-    static emm42_motor_t demo_motor;
-    uint8_t dir = 0U;
-
-    /* 初始化电机: UART4 总线, 地址 1, RE 脚 PD14 */
-    emm42_motor_init(&demo_motor, &huart4, 2, RS485_RE1_GPIO_Port,
-                     RS485_RE1_Pin);
-    emm42_en_control(&demo_motor, true, false);
-
-    while (1) {
-        /* 左转/右转交替 (0 = CW, 1 = CCW) */
-        dir ^= 1U;
-
-        emm42_vel_control(&demo_motor, dir, DEMO_MOTOR_SPEED_RPM, 0, false);
-
-        vTaskDelay(DEMO_MOTOR_TOGGLE_MS);
     }
 }
 
