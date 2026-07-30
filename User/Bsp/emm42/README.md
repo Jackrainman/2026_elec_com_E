@@ -9,6 +9,10 @@
 
 # 使用
 
+日常只需四个环节：`emm42_motor_init` → `emm42_en_control` →
+`emm42_vel_control` / `emm42_pos_control`，接收侧用 `emm42_frame_process`
+解析应答。其余 API 按需取用，分组见下。
+
 1. 将 `emm42.c` 添加到工程的 `Bsp` 分组中，在 `bsp.h` 中包含 `emm42.h`
 2. 声明电机句柄并初始化（句柄内含串口、地址、RE 脚）
 3. 在 `usart_ex.h` 中使能对应串口的 `UARTx_RX_DMA`
@@ -18,17 +22,41 @@
 
 # API
 
+## 常用控制
+
 - `emm42_motor_init` / `emm42_motor_deinit` 初始化 / 反初始化电机
-- `emm42_reset_motor` 重启电机
-- `emm42_reset_curpos_to_zero` 当前位置清零
 - `emm42_en_control` 使能控制
 - `emm42_vel_control` 速度模式
 - `emm42_pos_control` 位置模式（`mode`: 0 相对上一目标 / 1 相对零点绝对 / 2 相对当前位置）
 - `emm42_stop_now` 立即停止
-- `emm42_origin_trigger_return` 触发回零
+- `emm42_reset_curpos_to_zero` 当前位置清零
+- `emm42_frame_process` 应答帧解析（实时位置/转速/位置误差/回零状态/
+  电机状态/回零参数更新到句柄，并置位 `valid_mask`）
+
+## 状态读取与上报
+
 - `emm42_read_sys_params` 读取系统参数
 - `emm42_set_auto_report` 定时返回信息（电机周期主动上报，`ms = 0` 停止）
-- `emm42_frame_process` 应答帧解析
+
+## 回零
+
+- `emm42_origin_set_zero` 设置单圈回零的零点位置
+- `emm42_origin_trigger_return` 触发回零
+- `emm42_origin_interrupt` 强制中断并退出回零
+- `emm42_origin_read_params` / `emm42_origin_set_params` 读取 / 修改回零参数
+
+## 多机
+
+- `emm42_sync_motion` 触发多机同步运动（广播地址下发）
+- `emm42_multi_cmd` 多电机命令（一帧打包多条子命令广播下发）
+
+## 调试与产线
+
+- `emm42_reset_motor` 重启电机
+- `emm42_calibrate_encoder` 触发编码器校准
+- `emm42_release_protection` 解除堵转/过热/过流保护
+- `emm42_restore_factory` 恢复出厂设置
+- `emm42_set_addr` 修改电机 ID/地址
 
 # 示例
 

@@ -19,6 +19,7 @@ virtualFolder:
         - path: User/Bsp/DJI-Motor/dji_bldc_motor.c
         - path: User/Bsp/usart_ex/usart_ex.c
         - path: User/Bsp/emm42/emm42.c
+        - path: User/Bsp/emm42_can/emm42_can.c
         - path: User/Bsp/arm/arm.c
         - path: User/Bsp/raspi_serial/raspi_serial.c
       folders: []
