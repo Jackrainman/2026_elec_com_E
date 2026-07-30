@@ -71,8 +71,8 @@ void Error_Handler(void);
 #define LED1_GPIO_Port GPIOE
 #define LED2_Pin GPIO_PIN_8
 #define LED2_GPIO_Port GPIOE
-#define LED34_Pin GPIO_PIN_9
-#define LED34_GPIO_Port GPIOE
+#define LED3_Pin GPIO_PIN_9
+#define LED3_GPIO_Port GPIOE
 #define E_PUMP_Pin GPIO_PIN_10
 #define E_PUMP_GPIO_Port GPIOB
 #define PUMP_Pin GPIO_PIN_11
