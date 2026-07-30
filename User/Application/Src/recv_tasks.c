@@ -49,11 +49,14 @@ static void msg_receive(void *pvParameters) {
 
     raspi_serial_data_t command;
     static uint32_t last_sequence;
+    static float last_x = 0;
 
     while (1) {
         if (raspi_serial_get_latest(&command) &&
-            command.sequence != last_sequence) {
+            command.sequence != last_sequence &&
+            command.x != last_x) {
             last_sequence = command.sequence;
+            last_x = command.x;
             /* 通知 arm_ctrl 有新坐标 */
             xTaskNotifyGive(arm_ctrl_handle);
         }
@@ -129,7 +132,7 @@ static void arm_ctrl(void *pvParameters) {
             PUMP_ON();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
-                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(1000)) {
+                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(2000)) {
                     vTaskDelay(1);
                 }
             }
@@ -147,9 +150,9 @@ static void arm_ctrl(void *pvParameters) {
             cur2 = arm_get_position_pulse(2);
             cur3 = arm_get_position_pulse(3);
 
-            /* 第二段增量 = 目标脉冲 − 实际到位脉冲（补偿第一段偏差） */
-            int32_t dx1 = (int32_t)ARM_X_MM_TO_PULSE(command.x1 - command.x);
-            int32_t dy1 = (int32_t)ARM_Y_MM_TO_PULSE(command.y1 - command.y);
+            /* 第二段增量 = x1−x, y1−y */
+            int32_t dx1 = ARM_X_MM_TO_PULSE_S(command.x1 - command.x);
+            int32_t dy1 = ARM_Y_MM_TO_PULSE_S(command.y1 - command.y);
 
             uint32_t t2_x = (int32_t)cur1 + dx1;
             uint32_t t2_y = (int32_t)cur2 + dy1;
@@ -171,7 +174,7 @@ static void arm_ctrl(void *pvParameters) {
             PUMP_ON();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
-                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(1000)) {
+                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(2000)) {
                     vTaskDelay(1);
                 }
             }
