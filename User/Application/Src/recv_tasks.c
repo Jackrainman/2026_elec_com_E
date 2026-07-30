@@ -98,7 +98,7 @@ static void arm_ctrl(void *pvParameters) {
             /* 第一段增量 = 本次 − 上次 */
             int32_t dx  = ARM_X_MM_TO_PULSE_S(command.x - last.x1);
             int32_t dy  = ARM_Y_MM_TO_PULSE_S(command.y - last.y1);
-            int32_t dr  = ARM_DEG_TO_PULSE_S(command.th - last.th);
+            int32_t dr  = ARM_DEG_TO_PULSE_S(command.th);
 
             last = command;
 
