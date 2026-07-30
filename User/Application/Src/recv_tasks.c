@@ -9,6 +9,9 @@
 
 #include "includes.h"
 
+#define CAM_X_CORRECT   -13.0f
+#define CAM_Y_CORRECT   -32.0f
+
 static TaskHandle_t task2_handle;
 static TaskHandle_t msg_receive_handle;
 static TaskHandle_t arm_ctrl_handle;
@@ -35,8 +38,8 @@ void recv_tasks_init(void) {
     xTaskCreate(msg_receive, "msg_receive", 256, NULL, 3, &msg_receive_handle);
     xTaskCreate(arm_ctrl, "arm_ctrl", 512, NULL, 3, &arm_ctrl_handle);
 
-    vTaskSuspend(msg_receive_handle);
-    vTaskSuspend(arm_ctrl_handle);
+    // vTaskSuspend(msg_receive_handle);
+    // vTaskSuspend(arm_ctrl_handle);
 }
 
 /**
@@ -95,6 +98,7 @@ static void arm_ctrl(void *pvParameters) {
     raspi_serial_data_t command;
     raspi_serial_data_t last = {0};
     bool first = true;
+    bool first_move = true;
     int rounds = 0;  /* 上位机传入的轮次 */
 
     while (1) {
@@ -109,12 +113,19 @@ static void arm_ctrl(void *pvParameters) {
                 continue;
             }
 
-            /* 增量 = 上次 − 本次 */
-            int32_t dx  = ARM_X_MM_TO_PULSE_S(last.x  - command.x);
-            int32_t dy  = ARM_Y_MM_TO_PULSE_S(last.y  - command.y);
-            int32_t dr  = ARM_DEG_TO_PULSE_S(last.th - command.th);
-            int32_t dx1 = ARM_X_MM_TO_PULSE_S(last.x1 - command.x1);
-            int32_t dy1 = ARM_Y_MM_TO_PULSE_S(last.y1 - command.y1);
+            /* 增量 = 本次 − 上次 */
+            int32_t dx  = ARM_X_MM_TO_PULSE_S(command.x  - last.x);
+            int32_t dy  = ARM_Y_MM_TO_PULSE_S(command.y  - last.y);
+            int32_t dr  = ARM_DEG_TO_PULSE_S(command.th - last.th);
+            int32_t dx1 = ARM_X_MM_TO_PULSE_S(command.x1 - last.x1);
+            int32_t dy1 = ARM_Y_MM_TO_PULSE_S(command.y1 - last.y1);
+
+            /* 首次运动补偿摄像头→机械臂坐标系偏置 */
+            if (first_move) {
+                dx  += (int32_t)ARM_X_MM_TO_PULSE(CAM_X_CORRECT);
+                dy  += (int32_t)ARM_Y_MM_TO_PULSE(CAM_Y_CORRECT);
+                first_move = false;
+            }
 
             last = command;
 
@@ -148,6 +159,9 @@ static void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(2, t1_y, 50, 5000);
             arm_wait_axis_done(3, t1_r, 50, 5000);
 
+            /* 第一个坐标到位 → 开气泵 */
+            PUMP_ON();
+
             /* —— 再读位置，算第二段目标（仅 XY，R 轴不变）—— */
             arm_update_position(1);
             vTaskDelay(pdMS_TO_TICKS(15));
@@ -168,6 +182,9 @@ static void arm_ctrl(void *pvParameters) {
 
             arm_wait_axis_done(1, t2_x, 50, 5000);
             arm_wait_axis_done(2, t2_y, 50, 5000);
+
+            /* 第二个坐标到位 → 关气泵 */
+            PUMP_OFF();
 
             /* 本轮完成，轮次递减；全部完成后亮灯挂起 */
             send_reply("ok");

@@ -24,7 +24,7 @@ extern "C" {
 
 // <h> LPUART1 Configuration
 //   <e> LPUART1_TX_DMA               Enable LPUART1 TX DMA
-#define LPUART1_TX_DMA 1
+#define LPUART1_TX_DMA 0
 
 #ifdef LPUART1_TX_DMA
 //   <o> LPUART1_TX_DMA_BUF_SIZE      LPUART1 TX DMA Buffer Size <8-4096:8>
@@ -33,7 +33,7 @@ extern "C" {
 #endif /* LPUART1_TX_DMA */
 
 //   <e> LPUART1_RX_DMA               Enable LPUART1 RX DMA
-#define LPUART1_RX_DMA 1
+#define LPUART1_RX_DMA 0
 
 #ifdef LPUART1_RX_DMA
 //   <o> LPUART1_RX_DMA_BUF_SIZE      LPUART1 RX DMA Buffer Size <8-4096:8>

@@ -46,11 +46,12 @@ static void arm_test(void *pvParameters) {
         switch (key) {
             case KEY0_PRESS: {
                 /* X/Y +5cm, R +90° */
-                arm_axis_rel_move(1, (int32_t)ARM_X_MM_TO_PULSE(50), 100);
+                arm_axis_rel_move(1, (int32_t)ARM_X_MM_TO_PULSE(100), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
                 arm_axis_rel_move(2, (int32_t)ARM_Y_MM_TO_PULSE(50), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_rel_move(3, (int32_t)ARM_DEG_TO_PULSE(90), 100);
+                arm_axis_rel_move(3, (int32_t)ARM_DEG_TO_PULSE(0), 100);
+                // PUMP_ON();
             } break;
 
             case KEY1_PRESS: {
@@ -60,6 +61,7 @@ static void arm_test(void *pvParameters) {
                 arm_axis_rel_move(2, -(int32_t)ARM_Y_MM_TO_PULSE(30), 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
                 arm_axis_rel_move(3, -(int32_t)ARM_DEG_TO_PULSE(90), 100);
+                PUMP_OFF();
             } break;
 
             case KEY2_PRESS: {
