@@ -98,7 +98,7 @@ static void arm_ctrl(void *pvParameters) {
             /* 第一段增量 = 本次 − 上次 */
             int32_t dx  = ARM_X_MM_TO_PULSE_S(command.x - last.x1);
             int32_t dy  = ARM_Y_MM_TO_PULSE_S(command.y - last.y1);
-            int32_t dr  = ARM_DEG_TO_PULSE_S(command.th);
+            int32_t dr  = ARM_DEG_TO_PULSE_S(- command.th);
 
             last = command;
 
@@ -110,13 +110,13 @@ static void arm_ctrl(void *pvParameters) {
             arm_update_position(3);
             vTaskDelay(pdMS_TO_TICKS(15));
 
-            uint32_t cur1 = arm_get_position_pulse(1);
-            uint32_t cur2 = arm_get_position_pulse(2);
-            uint32_t cur3 = arm_get_position_pulse(3);
+            int32_t cur1 = arm_get_position_pulse(1);
+            int32_t cur2 = arm_get_position_pulse(2);
+            int32_t cur3 = arm_get_position_pulse(3);
 
             /* 第一段目标 = 当前位置 + 增量 */
-            uint32_t t1_x = (int32_t)cur1 + dx;
-            uint32_t t1_y = (int32_t)cur2 + dy;
+            int32_t t1_x = cur1 + dx;
+            int32_t t1_y = cur2 + dy;
 
             /* —— 发送第一段相对移动（仅 XY）—— */
             arm_axis_rel_move(1, dx, 0);
@@ -155,9 +155,9 @@ static void arm_ctrl(void *pvParameters) {
             int32_t dx1 = ARM_X_MM_TO_PULSE_S(command.x1 - command.x);
             int32_t dy1 = ARM_Y_MM_TO_PULSE_S(command.y1 - command.y);
 
-            uint32_t t2_x = (int32_t)cur1 + dx1;
-            uint32_t t2_y = (int32_t)cur2 + dy1;
-            uint32_t t2_r = (int32_t)cur3 + dr;
+            int32_t t2_x = cur1 + dx1;
+            int32_t t2_y = cur2 + dy1;
+            int32_t t2_r = cur3 + dr;
 
             /* —— 发送第二段相对移动（XY + R）—— */
             arm_axis_rel_move(1, dx1, 0);
@@ -167,9 +167,9 @@ static void arm_ctrl(void *pvParameters) {
             arm_axis_rel_move(3, dr, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
 
-            arm_wait_axis_done(1, t2_x, 50, 5000);
-            arm_wait_axis_done(2, t2_y, 50, 5000);
-            arm_wait_axis_done(3, t2_r, 50, 5000);
+            arm_wait_axis_done(1, t2_x, 20, 5000);
+            arm_wait_axis_done(2, t2_y, 20, 5000);
+            arm_wait_axis_done(3, t2_r, 10, 5000);
 
             /* 第二个坐标到位 → 开气泵，1s 后关 */
             E_PUMP_ON();

@@ -5,18 +5,28 @@
             "cwd": "${workspaceRoot}",
             "type": "cortex-debug",
             "request": "launch",
+            "name": "Debug: OpenOCD",
+            "servertype": "openocd",
+            "executable": "Build/Debug/2026_elec_com_E.elf",
+            "runToEntryPoint": "main",
+            "configFiles": [
+                "interface/stlink-v2.cfg",
+                "target/stm32g4x.cfg"
+            ],
+            "toolchainPrefix": "arm-none-eabi",
+            "svdFile": ".pack/Keil/STM32G4xx_DFP.1.6.0/CMSIS/SVD/STM32G474.svd"
+        },
+        {
+            "cwd": "${workspaceRoot}",
+            "type": "cortex-debug",
+            "request": "launch",
             "name": "Debug: JLINK",
             "servertype": "jlink",
-            "gdbPath": "/usr/bin/gdb-multiarch",
             "interface": "swd",
+            "executable": "Build/Debug/2026_elec_com_E.elf",
             "runToEntryPoint": "main",
             "device": "STM32G474VE",
-            "loadFiles": [
-                "Build/Debug/2026_elec_com_E.hex"
-            ],
-            "symbolFiles": [
-                "Build/Debug/2026_elec_com_E.axf"
-            ],
+            "toolchainPrefix": "arm-none-eabi",
             "svdFile": ".pack/Keil/STM32G4xx_DFP.1.6.0/CMSIS/SVD/STM32G474.svd"
         }
     ]

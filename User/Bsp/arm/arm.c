@@ -1,7 +1,7 @@
 /**
  ****************************************************************************************************
  * @file        arm.c
- * @brief       ÈıÖá»úĞµ±Û¿ØÖÆÄ£¿éÊµÏÖ (»ùÓÚ Emm42 ±Õ»·²½½øµç»ú)
+ * @brief       ä¸‰è½´æœºï¿½?ï¿½è‡‚æ§åˆ¶æ¨¡å—å®ç° (åŸºäº Emm42 ï¿½?ï¿½?æ­¥è¿›ç”µæœº)
  ****************************************************************************************************
  */
 
@@ -11,17 +11,17 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-/* ========================== µç»úÊµÀı ========================== */
+/* ========================== ç”µæœºå®ä¾‹ ========================== */
 
 static emm42_motor_t arm_motor[3];
 
-/* Öá±àºÅ ¡ú Êı×éË÷Òı */
+/* è½´ç¼–ï¿½? ï¿½? æ•°ç»„ç´¢å¼• */
 #define ARM_AXIS_IDX(axis)  ((axis) - 1)
 
-/* ========================== API ÊµÏÖ ========================== */
+/* ========================== API å®ç° ========================== */
 
 /**
- * @brief  ³õÊ¼»¯»úĞµ±Û
+ * @brief  åˆï¿½?ï¿½åŒ–æœºï¿½?ï¿½è‡‚
  */
 void arm_init(void)
 {
@@ -33,21 +33,25 @@ void arm_init(void)
 }
 
 /**
- * @brief  µ¥Öá¾ø¶ÔÒÆ¶¯£¨Ïà¶Ô×ø±êÁãµã£©
+ * @brief  å•è½´ç»ï¿½?ï¿½ç§»ï¿½?ï¼ˆç›¸å¯¹åæ ‡é›¶ç‚¹ï¼‰
  */
-void arm_axis_move(uint8_t axis, uint32_t pulse, uint16_t speed)
+void arm_axis_move(uint8_t axis, int32_t pulse, uint16_t speed)
 {
     if (axis < 1 || axis > 3) return;
 
     if (speed == 0) speed = ARM_DEFAULT_SPEED;
 
-    /* ¾ø¶ÔÎ»ÖÃÄ£Ê½: mode=1 (Ïà¶Ô×ø±êÁãµã) */
-    emm42_pos_control_pulse(&arm_motor[ARM_AXIS_IDX(axis)], ARM_DIR_CW, speed,
-                            ARM_DEFAULT_ACC, pulse, 1, false);
+    uint8_t dir = (pulse >= 0) ? ARM_DIR_CW : ARM_DIR_CCW;
+    uint32_t abs_pulse =
+        (pulse >= 0) ? (uint32_t)pulse : (uint32_t)(-(int64_t)pulse);
+
+    /* ç»ï¿½?ï¿½ä½ï¿½?æ¨¡å¼: mode=1 (ç›¸ï¿½?ï¿½åæ ‡é›¶ï¿½?) */
+    emm42_pos_control_pulse(&arm_motor[ARM_AXIS_IDX(axis)], dir, speed,
+                            ARM_DEFAULT_ACC, abs_pulse, 1, false);
 }
 
 /**
- * @brief  µ¥ÖáÏà¶ÔÒÆ¶¯
+ * @brief  å•è½´ç›¸ï¿½?ï¿½ç§»ï¿½?
  */
 void arm_axis_rel_move(uint8_t axis, int32_t pulse, uint16_t speed)
 {
@@ -56,29 +60,30 @@ void arm_axis_rel_move(uint8_t axis, int32_t pulse, uint16_t speed)
     if (speed == 0) speed = ARM_DEFAULT_SPEED;
 
     uint8_t dir = (pulse >= 0) ? ARM_DIR_CW : ARM_DIR_CCW;
-    uint32_t abs_pulse = (pulse >= 0) ? (uint32_t)pulse : (uint32_t)(-pulse);
+    uint32_t abs_pulse =
+        (pulse >= 0) ? (uint32_t)pulse : (uint32_t)(-(int64_t)pulse);
 
-    /* Ïà¶ÔÎ»ÖÃÄ£Ê½: mode=2 (Ïà¶Ôµ±Ç°Î»ÖÃ) */
+    /* ç›¸ï¿½?ï¿½ä½ï¿½?æ¨¡å¼: mode=2 (ç›¸ï¿½?ï¿½å½“å‰ä½ï¿½?) */
     emm42_pos_control_pulse(&arm_motor[ARM_AXIS_IDX(axis)], dir, speed,
                             ARM_DEFAULT_ACC, abs_pulse, 2, false);
 }
 
 /**
- * @brief  ¹ÀËãµ¥ÖáÒÆ¶¯ºÄÊ±
+ * @brief  ä¼°ç®—å•è½´ç§»åŠ¨è€—æ—¶
  */
 uint32_t arm_est_move_ms(uint32_t pulse, uint16_t speed)
 {
     if (speed == 0) speed = ARM_DEFAULT_SPEED;
 
-    /* È¦Êı = pulse / 3200, Ê±¼ä = È¦Êı / (RPM / 60) */
+    /* åœˆæ•° = pulse / 3200, æ—¶é—´ = åœˆæ•° / (RPM / 60) */
     float sec = (float)pulse / (float)ARM_PULSE_PER_REV / ((float)speed / 60.0f);
 
     return (uint32_t)(sec * 1000.0f) + 300;
 }
 
 /**
- * @brief  ¶ÁÈ¡Ò»´Î RS485 Ó¦´ğÖ¡²¢½âÎö
- * @return true=³É¹¦½âÎöÒ»Ö¡
+ * @brief  è¯»å–ä¸€ï¿½? RS485 åº”ç­”å¸§å¹¶è§£æ
+ * @return true=æˆåŠŸè§£æä¸€ï¿½?
  */
 static bool arm_read_response(emm42_motor_t *motor)
 {
@@ -91,34 +96,30 @@ static bool arm_read_response(emm42_motor_t *motor)
 }
 
 /**
- * @brief  ²éÑ¯²¢¸üĞÂÖ¸¶¨ÖáµÄÊµÊ±Î»ÖÃ
+ * @brief  æŸ¥ï¿½?ï¿½å¹¶æ›´æ–°æŒ‡å®šè½´çš„å®æ—¶ä½ç½®
  */
 void arm_update_position(uint8_t axis)
 {
     if (axis < 1 || axis > 3) return;
 
-    /* ·¢ËÍ¶ÁÎ»ÖÃÖ¸Áî */
+    /* å‘é€ï¿½?ï¿½ä½ï¿½?æŒ‡ä»¤ */
     emm42_read_sys_params(&arm_motor[ARM_AXIS_IDX(axis)], EMM42_S_CPOS);
-    /* µÈ´ıµç»úÓ¦´ğ£¨RS485 °ëË«¹¤ turnaround + ´«ÊäÊ±¼ä£© */
+    /* ç­‰å¾…ç”µæœºåº”ç­”ï¼ˆRS485 åŠåŒï¿½? turnaround + ä¼ è¾“æ—¶é—´ï¿½? */
     vTaskDelay(pdMS_TO_TICKS(5));
 
-    /* ÅÅ¿ÕÓ¦´ğÖ¡£¬È·±£¶Áµ½±¾´Î²éÑ¯µÄ»Ø¸´ */
+    /* æ’ç©ºåº”ç­”å¸§ï¼Œï¿½?ä¿ï¿½?ï¿½åˆ°ï¿½?æ¬¡æŸ¥è¯¢çš„å›ï¿½?? */
     for (int i = 0; i < 5; i++) {
         if (!arm_read_response(&arm_motor[ARM_AXIS_IDX(axis)])) break;
     }
 }
 
 /**
- * @brief  µÈ´ıÖ¸¶¨ÖáÔË¶¯µ½Î»£¨×èÈûÊ½£¬Ö÷¶¯²éÑ¯Î»ÖÃ£©
+ * @brief  ç­‰å¾…æŒ‡å®šè½´è¿åŠ¨åˆ°ä½ï¼ˆé˜»ï¿½?ï¿½å¼ï¼Œä¸»åŠ¨æŸ¥ï¿½?ä½ç½®ï¿½?
  */
-bool arm_wait_axis_done(uint8_t axis, uint32_t target, uint32_t tolerance,
+bool arm_wait_axis_done(uint8_t axis, int32_t target, uint32_t tolerance,
                         uint32_t timeout_ms)
 {
     if (axis < 1 || axis > 3) return false;
-
-    /* cur_pos ´æµÄÊÇ½Ç¶È, ×ªµ½Âö³åÓò±È½Ï: pulse = degree / 360 * 3200 */
-    uint32_t target_pulse = target;
-    uint32_t tol_pulse    = tolerance;
 
     TickType_t start = xTaskGetTickCount();
     TickType_t timeout_ticks = (timeout_ms > 0) ? pdMS_TO_TICKS(timeout_ms)
@@ -128,13 +129,14 @@ bool arm_wait_axis_done(uint8_t axis, uint32_t target, uint32_t tolerance,
         arm_update_position(axis);
 
         float cur_deg = arm_motor[ARM_AXIS_IDX(axis)].cur_pos;
-        uint32_t cur_pulse = (uint32_t)(cur_deg / 360.0f * (float)ARM_PULSE_PER_REV);
+        int32_t cur_pulse =
+            (int32_t)(cur_deg / 360.0f * (float)ARM_PULSE_PER_REV);
 
-        int32_t diff = (int32_t)cur_pulse - (int32_t)target_pulse;
+        int64_t diff = (int64_t)cur_pulse - (int64_t)target;
         if (diff < 0) diff = -diff;
-        if ((uint32_t)diff <= tol_pulse) return true;
+        if ((uint64_t)diff <= (uint64_t)tolerance) return true;
 
-        /* ³¬Ê±¼ì²é */
+        /* è¶…æ—¶æ£€ï¿½? */
         if (timeout_ms > 0) {
             if ((xTaskGetTickCount() - start) >= timeout_ticks) {
                 return false;
@@ -146,7 +148,7 @@ bool arm_wait_axis_done(uint8_t axis, uint32_t target, uint32_t tolerance,
 }
 
 /**
- * @brief  È«Öá¼±Í£
+ * @brief  å…¨è½´æ€¥åœ
  */
 void arm_emergency_stop(void)
 {
@@ -156,7 +158,7 @@ void arm_emergency_stop(void)
 }
 
 /**
- * @brief  Ê¹ÄÜ/Ê§ÄÜÈ«²¿µç»ú
+ * @brief  ä½¿èƒ½/å¤±èƒ½å…¨éƒ¨ç”µæœº
  */
 void arm_enable_all(bool en)
 {
@@ -166,17 +168,17 @@ void arm_enable_all(bool en)
 }
 
 /**
- * @brief  ¶ÁÈ¡Ö¸¶¨Öáµ±Ç°Î»ÖÃ£¨Âö³åÊı£©
+ * @brief  è¯»å–æŒ‡å®šè½´å½“å‰ä½ï¿½?ï¼ˆè„‰å†²æ•°ï¿½?
  */
-uint32_t arm_get_position_pulse(uint8_t axis)
+int32_t arm_get_position_pulse(uint8_t axis)
 {
     if (axis < 1 || axis > 3) return 0;
     float cur_deg = arm_motor[ARM_AXIS_IDX(axis)].cur_pos;
-    return (uint32_t)(cur_deg / 360.0f * (float)ARM_PULSE_PER_REV);
+    return (int32_t)(cur_deg / 360.0f * (float)ARM_PULSE_PER_REV);
 }
 
 /**
- * @brief  È«²¿Öáµ±Ç°Î»ÖÃÇåÁã
+ * @brief  å…¨éƒ¨è½´å½“å‰ä½ï¿½?æ¸…é›¶
  */
 void arm_set_zero(void)
 {
