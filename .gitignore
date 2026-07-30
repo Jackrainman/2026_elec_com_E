@@ -2,6 +2,8 @@
 /.settings
 /.eide/log
 /.eide.usr.ctx.json
+/.pack
+/.vscode/setting.json
 
 # project out
 /Build
