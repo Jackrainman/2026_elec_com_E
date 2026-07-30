@@ -26,6 +26,8 @@ virtualFolder:
     - name: Application
       files:
         - path: User/Application/Src/rtos_tasks.c
+        - path: User/Application/Src/key_tasks.c
+        - path: User/Application/Src/recv_tasks.c
       folders: []
     - name: Middlewares
       files: []

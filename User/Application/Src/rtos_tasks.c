@@ -14,18 +14,6 @@ void start_task(void *pvParameters);
 static TaskHandle_t task1_handle;
 void task1(void *pvParameters);
 
-static TaskHandle_t task2_handle;
-void task2(void *pvParameters);
-
-static TaskHandle_t arm_test_handle;
-void arm_test(void *pvParameters);
-
-static TaskHandle_t msg_receive_handle;
-void msg_receive(void *pvParameters);
-
-static TaskHandle_t arm_ctrl_handle;
-void arm_ctrl(void *pvParameters);
-
 /*****************************************************************************/
 
 /**
@@ -33,7 +21,7 @@ void arm_ctrl(void *pvParameters);
  *
  */
 void freertos_start(void) {
-    xTaskCreate(start_task, "start_task", 128, NULL, 2, &start_task_handle);
+    xTaskCreate(start_task, "start_task", 256, NULL, 2, &start_task_handle);
     vTaskStartScheduler();
 }
 
@@ -44,22 +32,20 @@ void freertos_start(void) {
  */
 void start_task(void *pvParameters) {
     UNUSED(pvParameters);
-    taskENTER_CRITICAL();
 
+    /* å¿…é¡»æœ‰çš„ä»»åŠ¡: LED å¿ƒè·³ */
     xTaskCreate(task1, "task1", 128, NULL, 2, &task1_handle);
-    xTaskCreate(task2, "task2", 128, NULL, 2, &task2_handle);
-    xTaskCreate(arm_test, "arm_test", 512, NULL, 3, &arm_test_handle);
-    xTaskCreate(msg_receive, "msg_receive", 256, NULL, 3, &msg_receive_handle);
-    xTaskCreate(arm_ctrl, "arm_ctrl", 512, NULL, 3, &arm_ctrl_handle);
+    // xTaskCreate(task4, "task4", 128, NULL, 2, &task4_handle); /* å·²æ— ç”¨, ä¿ç•™å¤‡ç”¨ */
 
-    // vTaskSuspend(arm_test_handle);
-    // vTaskSuspend(msg_receive_handle);
-    // vTaskSuspend(arm_ctrl_handle);
+    /* SMD ç”µæœºä¸²å£æ¥æ”¶åˆå§‹åŒ– (åˆ›å»ºé˜Ÿåˆ—/ä¿¡å·é‡/æ¥æ”¶ä»»åŠ¡),
+       ä¸è°ƒç”¨åˆ™ smd_usart_send_cmd ä¼šä¸¢å¼ƒæ‰€æœ‰ç”µæœºå‘½ä»¤ */
+    smd_usart_recv_init();
 
-    raspi_serial_init(&huart1);
+    /* æŒ‰éœ€å¼€å…³: æ‰‹åŠ¨æ³¨é‡Šæ‰ä¸ç”¨çš„ä¸€è·¯ init å³å¯, æ— éœ€å®å®šä¹‰ */
+    key_tasks_init();  /* æŒ‰é”®è°ƒè¯•æœºæ¢°è‡‚ (åªæœ‰ç”¨ KEY æ—¶éœ€è¦) */
+    recv_tasks_init(); /* æ¥æ”¶æ ‘è“æ´¾ä¸Šä½æœºæ•°æ® (åªæœ‰æ¥ä¸Šä½æœºæ—¶éœ€è¦) */
 
-    vTaskDelete(start_task_handle);
-    taskEXIT_CRITICAL();
+    vTaskDelete(NULL);
 }
 
 /**
@@ -76,170 +62,6 @@ void task1(void *pvParameters) {
     while (1) {
         LED0_TOGGLE();
         vTaskDelay(1000);
-    }
-}
-
-/**
- * @brief Task2: print running time.
- *
- * @param pvParameters Start parameters.
- */
-void task2(void *pvParameters) {
-    UNUSED(pvParameters);
-
-    while (1) {
-        printf("STM32G4xx FreeRTOS project template. Running time: %u ms. \n",
-               xTaskGetTickCount());
-        vTaskDelay(1000);
-    }
-}
-
-/**
- * @brief Arm test task: °´¼ü¿ØÖÆ»úĞµ±Û¶¯×÷£¨¾ø¶ÔÎ»ÖÃ£©
- *
- * KEY0: X/Y/R Ä¿±êÎ»ÖÃ (50mm, 50mm, 90¡ã)
- * KEY1: X/Y/R Ä¿±êÎ»ÖÃ (30mm, 30mm, 0¡ã)
- * KEY2: X/Y/R Ä¿±êÎ»ÖÃ (100mm, 100mm, 270¡ã)
- * WKUP: X/Y/R »ØÁã (0, 0, 0)
- *
- * @param pvParameters Start parameters.
- */
-void arm_test(void *pvParameters) {
-    UNUSED(pvParameters);
-
-    arm_init();
-
-    key_press_t key;
-
-    while (1) {
-        key = key_scan(0);
-        switch (key) {
-            case KEY0_PRESS: {
-                arm_axis_move(1, ARM_X_MM_TO_PULSE(50), 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(2, ARM_Y_MM_TO_PULSE(50), 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(3, ARM_DEG_TO_PULSE(90), 100);
-            } break;
-
-            case KEY1_PRESS: {
-                arm_axis_move(1, ARM_X_MM_TO_PULSE(30), 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(2, ARM_Y_MM_TO_PULSE(30), 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(3, 0, 100);
-            } break;
-
-            case KEY2_PRESS: {
-                arm_axis_move(1, ARM_X_MM_TO_PULSE(100), 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(2, ARM_Y_MM_TO_PULSE(100), 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(3, ARM_DEG_TO_PULSE(270), 100);
-            } break;
-
-            case WKUP_PRESS: {
-                arm_axis_move(1, 0, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(2, 0, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(3, 0, 100);
-            } break;
-
-            default:
-                break;
-        }
-
-        vTaskDelay(10);
-    }
-}
-
-/**
- * @brief ÏûÏ¢½ÓÊÕÈÎÎñ: ÂÖÑ¯Ê÷İ®ÅÉ´®¿Ú×ø±êÊı¾İ, Í¨Öª arm_ctrl ´¦Àí
- *
- * @param pvParameters Start parameters.
- */
-void msg_receive(void *pvParameters) {
-    UNUSED(pvParameters);
-
-    raspi_serial_data_t command;
-    static uint32_t last_sequence;
-
-    while (1) {
-        if (raspi_serial_get_latest(&command) &&
-            command.sequence != last_sequence) {
-            last_sequence = command.sequence;
-            send_reply("OK\n");
-            /* Í¨Öª arm_ctrl ÓĞĞÂ×ø±ê */
-            xTaskNotifyGive(arm_ctrl_handle);
-        }
-        vTaskDelay(10);
-    }
-}
-
-/**
- * @brief »úĞµ±Û¿ØÖÆÈÎÎñ: µÈ´ı msg_receive Í¨ÖªºóÖ´ĞĞÁ½¶Î¾ø¶ÔÎ»ÖÃÒÆ¶¯
- *        Ê÷İ®ÅÉÏÂ·¢ÎïÀí×ø±ê£¨mm/¡ã£©£¬Ö±½Ó×ªÎªÂö³åºóÏÂ·¢
- *
- * @param pvParameters Start parameters.
- */
-void arm_ctrl(void *pvParameters) {
-    UNUSED(pvParameters);
-
-    raspi_serial_data_t command;
-    static uint32_t last_sequence;
-    bool first = true;
-    int rounds = 0;  /* ÉÏÎ»»ú´«ÈëµÄÊ£ÓàÂÖ´Î */
-
-    while (1) {
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-        if (raspi_serial_get_latest(&command) &&
-            command.sequence != last_sequence) {
-            last_sequence = command.sequence;
-
-            /* Ê×´ÎÊÕµ½Êı¾İÊ±´Ó command.a ¶ÁÈ¡×ÜÂÖÊı */
-            if (first) {
-                rounds = (int)command.a;
-                first = false;
-            }
-
-            /* ¡ª¡ª µÚÒ»¶Î£º¾ø¶ÔÎ»ÖÃ (X, Y, R) ¡ª¡ª */
-            uint32_t t1_x = ARM_X_MM_TO_PULSE(command.x);
-            uint32_t t1_y = ARM_Y_MM_TO_PULSE(command.y);
-            uint32_t t1_r = ARM_DEG_TO_PULSE(command.th);
-
-            arm_axis_move(1, t1_x, 0);
-            vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(2, t1_y, 0);
-            vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(3, t1_r, 0);
-            vTaskDelay(pdMS_TO_TICKS(20));
-
-            arm_wait_axis_done(1, t1_x, 50, 5000);
-            arm_wait_axis_done(2, t1_y, 50, 5000);
-            arm_wait_axis_done(3, t1_r, 50, 5000);
-
-            /* ¡ª¡ª µÚ¶ş¶Î£º¾ø¶ÔÎ»ÖÃ (½ö X1, Y1£¬R Öá²»¶¯) ¡ª¡ª */
-            uint32_t t2_x = ARM_X_MM_TO_PULSE(command.x1);
-            uint32_t t2_y = ARM_Y_MM_TO_PULSE(command.y1);
-
-            arm_axis_move(1, t2_x, 0);
-            vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(2, t2_y, 0);
-            vTaskDelay(pdMS_TO_TICKS(20));
-
-            arm_wait_axis_done(1, t2_x, 50, 5000);
-            arm_wait_axis_done(2, t2_y, 50, 5000);
-
-            send_reply("OK\n");
-            /* ±¾ÂÖÍê³É£¬ÂÖ´Îµİ¼õ */
-            rounds--;
-            if (rounds <= 0) {
-                LED1_ON();
-                first = true;  /* µÈ´ıÏÂÒ»ÂÖÃüÁîÊ±ÖØĞÂ¶ÁÈ¡ rounds */
-            }
-        }
     }
 }
 
