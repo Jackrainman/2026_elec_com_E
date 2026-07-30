@@ -624,7 +624,8 @@ void emm42_can_set_firmware(emm42_can_motor_t *motor, bool store, uint8_t fw) {
  */
 void emm42_can_set_ctrl_mode(emm42_can_motor_t *motor, bool store,
                              bool closed_loop) {
-    uint8_t cmd[5] = {0x46, 0xA6, (uint8_t)store, (uint8_t)closed_loop,
+    /* 注意: 手册 V1.0.3 辅助码为 0xA6, 但实机固件 V1.0.7 需 0x69 (0xA6 返回 EE) */
+    uint8_t cmd[5] = {0x46, 0x69, (uint8_t)store, (uint8_t)closed_loop,
                       EMM42_CAN_CHECK_BYTE};
     send_command(motor, cmd, sizeof(cmd));
 }
