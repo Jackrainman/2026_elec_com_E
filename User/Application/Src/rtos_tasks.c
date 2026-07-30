@@ -45,7 +45,7 @@ void start_task(void *pvParameters) {
 
     /* 按需开关: 手动注释掉不用的一路 init 即可, 无需宏定义 */
     key_tasks_init();  /* 按键调试机械臂 (只有用 KEY 时需要) */
-    recv_tasks_init(); /* 接收树莓派上位机数据 (只有接上位机时需要) */
+    // recv_tasks_init(); /* 接收树莓派上位机数据 (只有接上位机时需要) */
 
     vTaskDelete(NULL);
 }
@@ -75,19 +75,18 @@ void task1(void *pvParameters) {
 void task4(void *pvParameters) {
     UNUSED(pvParameters);
 
-    static emm42_motor_t demo_motor;
+    static emm42_can_motor_t demo_motor;
     uint8_t dir = 0U;
 
-    /* 初始化电机: UART4 总线, 地址 1, RE 脚 PD14 */
-    emm42_motor_init(&demo_motor, &huart4, 2, RS485_RE1_GPIO_Port,
-                     RS485_RE1_Pin);
-    emm42_en_control(&demo_motor, true, false);
+    /* 初始化电机: CAN1 总线, 地址 2 */
+    emm42_can_motor_init(&demo_motor, can1_selected, 2);
+    emm42_can_en_control(&demo_motor, true, false);
 
     while (1) {
         /* 左转/右转交替 (0 = CW, 1 = CCW) */
         dir ^= 1U;
 
-        emm42_vel_control(&demo_motor, dir, DEMO_MOTOR_SPEED_RPM, 0, false);
+        emm42_can_vel_control(&demo_motor, dir, DEMO_MOTOR_SPEED_RPM, 0, false);
 
         vTaskDelay(DEMO_MOTOR_TOGGLE_MS);
     }

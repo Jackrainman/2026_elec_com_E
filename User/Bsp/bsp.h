@@ -19,7 +19,6 @@ extern "C" {
 #include "./usart_ex/usart_ex.h"
 #include "./can_list/can_list.h"
 #include "./DJI-Motor/dji_bldc_motor.h"
-#include "./emm42/emm42.h"
 #include "./emm42_can/emm42_can.h"
 #include "./arm/arm.h"
 #include "./raspi_serial/raspi_serial.h"

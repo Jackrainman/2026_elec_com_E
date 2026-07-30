@@ -1,19 +1,18 @@
 /**
  ****************************************************************************************************
  * @file        arm.c
- * @brief       三轴机械臂控制模块实现 (基于 Emm42 闭环步进电机)
+ * @brief       三轴机械臂控制模块实现 (基于 Emm42 CAN 闭环步进电机)
  ****************************************************************************************************
  */
 
 #include "arm.h"
-#include "emm42/emm42.h"
-#include "usart_ex/usart_ex.h"
+#include "emm42_can/emm42_can.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
 /* ========================== 电机实例 ========================== */
 
-static emm42_motor_t arm_motor[3];
+static emm42_can_motor_t arm_motor[3];
 
 /* 轴编号 → 数组索引 */
 #define ARM_AXIS_IDX(axis)  ((axis) - 1)
@@ -26,9 +25,10 @@ static emm42_motor_t arm_motor[3];
 void arm_init(void)
 {
     for (int i = 0; i < 3; i++) {
-        emm42_motor_init(&arm_motor[i], &huart4, i + 1,
-                         RS485_RE1_GPIO_Port, RS485_RE1_Pin);
-        emm42_en_control(&arm_motor[i], true, false);
+        uint8_t addr = (i == 0) ? ARM_MOTOR_X_ADDR :
+                       (i == 1) ? ARM_MOTOR_Y_ADDR : ARM_MOTOR_R_ADDR;
+        emm42_can_motor_init(&arm_motor[i], can1_selected, addr);
+        emm42_can_en_control(&arm_motor[i], true, false);
     }
 }
 
@@ -42,8 +42,8 @@ void arm_axis_move(uint8_t axis, uint32_t pulse, uint16_t speed)
     if (speed == 0) speed = ARM_DEFAULT_SPEED;
 
     /* 绝对位置模式: mode=1 (相对坐标零点) */
-    emm42_pos_control_pulse(&arm_motor[ARM_AXIS_IDX(axis)], ARM_DIR_CW, speed,
-                            ARM_DEFAULT_ACC, pulse, 1, false);
+    emm42_can_pos_control_pulse(&arm_motor[ARM_AXIS_IDX(axis)], ARM_DIR_CW,
+                                speed, ARM_DEFAULT_ACC, pulse, 1, false);
 }
 
 /**
@@ -59,8 +59,8 @@ void arm_axis_rel_move(uint8_t axis, int32_t pulse, uint16_t speed)
     uint32_t abs_pulse = (pulse >= 0) ? (uint32_t)pulse : (uint32_t)(-pulse);
 
     /* 相对位置模式: mode=2 (相对当前位置) */
-    emm42_pos_control_pulse(&arm_motor[ARM_AXIS_IDX(axis)], dir, speed,
-                            ARM_DEFAULT_ACC, abs_pulse, 2, false);
+    emm42_can_pos_control_pulse(&arm_motor[ARM_AXIS_IDX(axis)], dir, speed,
+                                ARM_DEFAULT_ACC, abs_pulse, 2, false);
 }
 
 /**
@@ -77,20 +77,6 @@ uint32_t arm_est_move_ms(uint32_t pulse, uint16_t speed)
 }
 
 /**
- * @brief  读取一次 RS485 应答帧并解析
- * @return true=成功解析一帧
- */
-static bool arm_read_response(emm42_motor_t *motor)
-{
-    uint8_t buf[32];
-    uint32_t len = uart_dmarx_read(motor->huart, buf, sizeof(buf));
-    if (len > 0) {
-        return emm42_frame_process(buf, len);
-    }
-    return false;
-}
-
-/**
  * @brief  查询并更新指定轴的实时位置
  */
 void arm_update_position(uint8_t axis)
@@ -98,14 +84,9 @@ void arm_update_position(uint8_t axis)
     if (axis < 1 || axis > 3) return;
 
     /* 发送读位置指令 */
-    emm42_read_sys_params(&arm_motor[ARM_AXIS_IDX(axis)], EMM42_S_CPOS);
-    /* 等待电机应答（RS485 半双工 turnaround + 传输时间） */
+    emm42_can_read_sys_params(&arm_motor[ARM_AXIS_IDX(axis)], EMM42_CAN_S_CPOS);
+    /* 等待电机应答（CAN 传输与回调处理时间） */
     vTaskDelay(pdMS_TO_TICKS(5));
-
-    /* 排空应答帧，确保读到本次查询的回复 */
-    for (int i = 0; i < 5; i++) {
-        if (!arm_read_response(&arm_motor[ARM_AXIS_IDX(axis)])) break;
-    }
 }
 
 /**
@@ -151,7 +132,7 @@ bool arm_wait_axis_done(uint8_t axis, uint32_t target, uint32_t tolerance,
 void arm_emergency_stop(void)
 {
     for (int i = 0; i < 3; i++) {
-        emm42_stop_now(&arm_motor[i], false);
+        emm42_can_stop_now(&arm_motor[i], false);
     }
 }
 
@@ -161,7 +142,7 @@ void arm_emergency_stop(void)
 void arm_enable_all(bool en)
 {
     for (int i = 0; i < 3; i++) {
-        emm42_en_control(&arm_motor[i], en, false);
+        emm42_can_en_control(&arm_motor[i], en, false);
     }
 }
 
@@ -181,6 +162,6 @@ uint32_t arm_get_position_pulse(uint8_t axis)
 void arm_set_zero(void)
 {
     for (int i = 0; i < 3; i++) {
-        emm42_reset_curpos_to_zero(&arm_motor[i]);
+        emm42_can_reset_curpos_to_zero(&arm_motor[i]);
     }
 }
