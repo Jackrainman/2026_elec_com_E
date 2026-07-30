@@ -143,7 +143,7 @@ bool raspi_serial_init(UART_HandleTypeDef *huart) {
 }
 
 
-/* 读取数据 */
+/* 应用端读取数据 */
 bool raspi_serial_get_latest(raspi_serial_data_t *data) {
     bool available;
 
@@ -159,7 +159,7 @@ bool raspi_serial_get_latest(raspi_serial_data_t *data) {
     return available;
 }
 
-/* 反馈数据 */
+/* 反馈数据至上位机 */
 void send_reply(const char *reply)
 {
     uart_dmatx_write(raspi_uart, reply, strlen(reply));

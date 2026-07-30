@@ -9,8 +9,9 @@
 
 #include "includes.h"
 
-#define CAM_X_CORRECT   40.0f
-#define CAM_Y_CORRECT   17.0f
+/* 单位mm */
+#define CAM_X_CORRECT 32.0f
+#define CAM_Y_CORRECT 160.0f
 
 static TaskHandle_t msg_receive_handle;
 static TaskHandle_t arm_ctrl_handle;
@@ -53,8 +54,7 @@ static void msg_receive(void *pvParameters) {
 
     while (1) {
         if (raspi_serial_get_latest(&command) &&
-            command.sequence != last_sequence &&
-            command.x != last_x) {
+            command.sequence != last_sequence && command.x != last_x) {
             last_sequence = command.sequence;
             last_x = command.x;
             /* 通知 arm_ctrl 有新坐标 */
@@ -77,7 +77,7 @@ static void arm_ctrl(void *pvParameters) {
     raspi_serial_data_t last = {0};
     bool first = true;
     bool first_move = true;
-    int rounds = 0;  /* 上位机传入的轮次 */
+    int rounds = 0; /* 上位机传入的轮次 */
 
     while (1) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -96,9 +96,9 @@ static void arm_ctrl(void *pvParameters) {
             }
 
             /* 第一段增量 = 本次 − 上次 */
-            int32_t dx  = ARM_X_MM_TO_PULSE_S(command.x - last.x1);
-            int32_t dy  = ARM_Y_MM_TO_PULSE_S(command.y - last.y1);
-            int32_t dr  = ARM_DEG_TO_PULSE_S(- command.th);
+            int32_t dx = ARM_X_MM_TO_PULSE_S(command.x - last.x1);
+            int32_t dy = ARM_Y_MM_TO_PULSE_S(command.y - last.y1);
+            int32_t dr = ARM_DEG_TO_PULSE_S(last.th);
 
             last = command;
 
@@ -117,23 +117,28 @@ static void arm_ctrl(void *pvParameters) {
             /* 第一段目标 = 当前位置 + 增量 */
             int32_t t1_x = cur1 + dx;
             int32_t t1_y = cur2 + dy;
+            int32_t t1_r = cur3 + dr;
 
             /* —— 发送第一段相对移动（仅 XY）—— */
             arm_axis_rel_move(1, dx, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
             arm_axis_rel_move(2, dy, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
+            arm_axis_rel_move(3, dr, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
 
             /* 等到位 */
             arm_wait_axis_done(1, t1_x, 50, 5000);
             arm_wait_axis_done(2, t1_y, 50, 5000);
+            arm_wait_axis_done(3, t1_r, 50, 5000);
 
             /* 第一个坐标到位 → 开气泵，1s 后关 */
             PUMP_ON();
             E_PUMP_ON();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
-                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(1000)) {
+                while ((xTaskGetTickCount() - xPumpTick) <
+                       pdMS_TO_TICKS(1000)) {
                     vTaskDelay(1);
                 }
             }
@@ -154,6 +159,7 @@ static void arm_ctrl(void *pvParameters) {
             /* 第二段增量 = x1−x, y1−y */
             int32_t dx1 = ARM_X_MM_TO_PULSE_S(command.x1 - command.x);
             int32_t dy1 = ARM_Y_MM_TO_PULSE_S(command.y1 - command.y);
+            dr = ARM_DEG_TO_PULSE_S(-command.th);
 
             int32_t t2_x = cur1 + dx1;
             int32_t t2_y = cur2 + dy1;
@@ -175,14 +181,16 @@ static void arm_ctrl(void *pvParameters) {
             E_PUMP_ON();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
-                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(1000)) {
+                while ((xTaskGetTickCount() - xPumpTick) <
+                       pdMS_TO_TICKS(1000)) {
                     vTaskDelay(1);
                 }
             }
             PUMP_OFF();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
-                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(1000)) {
+                while ((xTaskGetTickCount() - xPumpTick) <
+                       pdMS_TO_TICKS(1000)) {
                     vTaskDelay(1);
                 }
             }
