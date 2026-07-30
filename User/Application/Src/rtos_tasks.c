@@ -164,11 +164,13 @@ void msg_receive(void *pvParameters) {
 
     raspi_serial_data_t command;
     static uint32_t last_sequence;
+    static float last_x;
 
     while (1) {
         if (raspi_serial_get_latest(&command) &&
-            command.sequence != last_sequence) {
+            command.sequence != last_sequence && command.x != last_x) {
             last_sequence = command.sequence;
+            last_x = command.x;
             send_reply("OK\n");
             /* 通知 arm_ctrl 有新坐标 */
             xTaskNotifyGive(arm_ctrl_handle);
@@ -189,7 +191,7 @@ void arm_ctrl(void *pvParameters) {
     raspi_serial_data_t command;
     static uint32_t last_sequence;
     bool first = true;
-    int rounds = 0;  /* 上位机传入的剩余轮次 */
+    int rounds = 0; /* 上位机传入的剩余轮次 */
 
     while (1) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -204,40 +206,44 @@ void arm_ctrl(void *pvParameters) {
                 first = false;
             }
 
-            /* —— 第一段：绝对位置 (X, Y, R) —— */
-            uint32_t t1_x = ARM_X_MM_TO_PULSE(command.x);
-            uint32_t t1_y = ARM_Y_MM_TO_PULSE(command.y);
-            uint32_t t1_r = ARM_DEG_TO_PULSE(command.th);
+            /* —— 第一段：绝对位置 (X, Y)，叠加相机偏移，R 轴不动 —— */
+            uint32_t t1_x = ARM_X_MM_TO_PULSE(command.x + CAM_X_CORRECT);
+            uint32_t t1_y = ARM_Y_MM_TO_PULSE(command.y + CAM_Y_CORRECT);
 
             arm_axis_move(1, t1_x, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
             arm_axis_move(2, t1_y, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(3, t1_r, 0);
-            vTaskDelay(pdMS_TO_TICKS(20));
 
-            arm_wait_axis_done(1, t1_x, 50, 5000);
-            arm_wait_axis_done(2, t1_y, 50, 5000);
-            arm_wait_axis_done(3, t1_r, 50, 5000);
+            arm_wait_axis_done(1, t1_x, 200, 5000);
+            arm_wait_axis_done(2, t1_y, 200, 5000);
 
-            /* —— 第二段：绝对位置 (仅 X1, Y1，R 轴不动) —— */
-            uint32_t t2_x = ARM_X_MM_TO_PULSE(command.x1);
-            uint32_t t2_y = ARM_Y_MM_TO_PULSE(command.y1);
+            /* —— 第二段：绝对位置 (X1, Y1)，R 轴相对移动，叠加相机偏移 —— */
+            uint32_t t2_x = ARM_X_MM_TO_PULSE(command.x1 + CAM_X_CORRECT);
+            uint32_t t2_y = ARM_Y_MM_TO_PULSE(command.y1 + CAM_Y_CORRECT);
+            int32_t  t2_r = ARM_DEG_TO_PULSE_S(command.th);
 
             arm_axis_move(1, t2_x, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
             arm_axis_move(2, t2_y, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
 
-            arm_wait_axis_done(1, t2_x, 50, 5000);
-            arm_wait_axis_done(2, t2_y, 50, 5000);
+            /* R 轴相对移动：先读取当前位置，计算预期绝对位置用于到位判断 */
+            arm_update_position(3);
+            uint32_t r_expected = (uint32_t)((int32_t)arm_get_position_pulse(3) + t2_r);
+            arm_axis_rel_move(3, t2_r, 0);
+            vTaskDelay(pdMS_TO_TICKS(20));
+
+            arm_wait_axis_done(1, t2_x, 200, 5000);
+            arm_wait_axis_done(2, t2_y, 200, 5000);
+            arm_wait_axis_done(3, r_expected, 200, 5000);
 
             send_reply("OK\n");
             /* 本轮完成，轮次递减 */
             rounds--;
             if (rounds <= 0) {
                 LED1_ON();
-                first = true;  /* 等待下一轮命令时重新读取 rounds */
+                first = true; /* 等待下一轮命令时重新读取 rounds */
             }
         }
     }
