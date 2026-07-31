@@ -208,7 +208,7 @@ bool arm_wait_axis_done(uint8_t axis, int32_t target, uint32_t tolerance,
             }
         }
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(20);
     }
 }
 
