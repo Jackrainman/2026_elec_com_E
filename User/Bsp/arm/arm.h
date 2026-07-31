@@ -29,6 +29,10 @@ extern "C" {
 #define ARM_DEFAULT_SPEED   60      /* 默认转速 RPM */
 #define ARM_DEFAULT_ACC     1       /* 默认加速度档位 */
 
+/* 初始化同步确认参数（模仿 2026R1） */
+#define ARM_SYNC_RETRY_TIMES  3    /* 单轴同步重试次数 */
+#define ARM_SYNC_TIMEOUT_MS   50   /* 单次等待应答超时 (ms) */
+
 /* 细分: 51200 脉冲/圈（按实际电机细分设置修改） */
 #define ARM_PULSE_PER_REV   51200U
 
@@ -61,8 +65,25 @@ extern "C" {
 
 /**
  * @brief  初始化机械臂（使能全部电机并设为位置模式）
+ * @note   上电等待 1s 后，将三个电机当前位置设为零点；
+ *         随后读回各轴位置确认电机在线（用 arm_is_ready() 查询结果）
  */
 void arm_init(void);
+
+/**
+ * @brief  查询机械臂是否初始化成功
+ * @note   模仿 2026R1：初始化时读回各轴位置并校验应答，
+ *         三轴均同步成功才返回 true
+ * @return true=三轴均在线, false=存在离线轴
+ */
+bool arm_is_ready(void);
+
+/**
+ * @brief  查询指定轴是否初始化成功（通信同步成功）
+ * @param  axis  轴编号：1=X, 2=Y, 3=R
+ * @return true=该轴在线, false=离线或无应答
+ */
+bool arm_axis_is_ready(uint8_t axis);
 
 /**
  * @brief  单轴绝对移动（相对坐标零点）

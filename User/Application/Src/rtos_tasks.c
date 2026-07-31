@@ -35,15 +35,15 @@ void start_task(void *pvParameters) {
 
     /* 必须有的任务: LED 心跳 */
     xTaskCreate(task1, "task1", 128, NULL, 2, &task1_handle);
-    // xTaskCreate(task4, "task4", 128, NULL, 2, &task4_handle); /* 已无�?, 保留备用 */
+    // xTaskCreate(task4, "task4", 128, NULL, 2, &task4_handle); /* 已无�?, 保留备用 */
 
-    /* SMD 电机串口接收初�?�化 (创建队列/信号�?/接收任务),
-       不调用则 smd_usart_send_cmd 会丢弃所有电机命�? */
+    /* SMD 电机串口接收初�?�化 (创建队列/信号�?/接收任务),
+       不调用则 smd_usart_send_cmd 会丢弃所有电机命�? */
     smd_usart_recv_init();
 
-    /* 按需开�?: 手动注释掉不用的一�? init 即可, 无需宏定�? */
-    key_tasks_init();  /* 按键调试机�?�臂 (�?有用 KEY 时需�?) */
-    recv_tasks_init(); /* 接收树莓派上位机数据 (�?有接上位机时需�?) */
+    /* 按需开�?: 手动注释掉不用的一�? init 即可, 无需宏定�? */
+    key_tasks_init();  /* 按键调试机�?�臂 (�?有用 KEY 时需�?) */
+    // recv_tasks_init(); /* 接收树莓派上位机数据 (�?有接上位机时需�?) */
 
     vTaskDelete(NULL);
 }

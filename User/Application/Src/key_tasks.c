@@ -17,7 +17,7 @@ static void arm_test(void *pvParameters);
 /**
  * @brief 创建按键调试相关任务.
  *
- * @note arm_init() 重复调用无害(重新使能电机), 因此本组与 recv 组各自调用.
+ * @note arm_init() 重复调用无害(重新使能电机并清零位置), 因此本组与 recv 组各自调用.
  */
 void key_tasks_init(void) {
     arm_init();
