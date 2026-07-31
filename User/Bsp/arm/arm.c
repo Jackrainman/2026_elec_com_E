@@ -78,7 +78,10 @@ void arm_init(void)
         }
         vTaskDelay(pdMS_TO_TICKS(20));
     }
+<<<<<<< HEAD
     servo_init(&servo, &htim1, TIM_CHANNEL_1, 2500, 500);
+=======
+>>>>>>> 5ab86b9f1c292ba4bdf24f500d0b2d5ef43d284c
 
     /* 等待电机上电稳定后，将当前位置清零作为坐标零点 */
     vTaskDelay(pdMS_TO_TICKS(1000));
