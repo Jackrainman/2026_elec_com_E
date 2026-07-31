@@ -18,7 +18,7 @@ static void servo_test(void *pvParameters);
  * @brief 创建舵机测试相关任务.
  */
 void key_tasks_init(void) {
-    arm_init();  /* 初始化舵机 */
+    arm_init(); /* 初始化舵机 */
 
     xTaskCreate(servo_test, "servo_test", 256, NULL, 2, &servo_test_handle);
 }
@@ -37,18 +37,18 @@ static void servo_test(void *pvParameters) {
     UNUSED(pvParameters);
 
     key_press_t key;
-    int16_t pulse = 1500;  /* 起始中位 */
+    int16_t pulse = 1500; /* 起始中位 */
 
     while (1) {
         key = key_scan(0);
 
         switch (key) {
             case KEY0_PRESS: {
-                MAGNET_ON();
+                SERVO_UP();
             } break;
 
             case KEY1_PRESS: {
-                MAGNET_OFF();
+                SERVO_DOWN();
             } break;
 
             case KEY2_PRESS: {

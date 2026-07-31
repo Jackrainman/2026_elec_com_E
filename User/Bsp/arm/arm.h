@@ -31,43 +31,51 @@ extern "C" {
 
 /* 舵机 */
 extern servo_t servo;
-#define SERVO_DOWN()   servo_set_state(&servo, SERVO_OPEN)
-#define SERVO_UP() servo_set_state(&servo, SERVO_CLOSE)
+#define SERVO_DOWN()      servo_set_state(&servo, SERVO_OPEN)
+#define SERVO_UP()        servo_set_state(&servo, SERVO_CLOSE)
 
 /* ========================== 电机地址配置 ========================== */
-#define ARM_MOTOR_X_ADDR    1   /* X轴电机地址 */
-#define ARM_MOTOR_Y_ADDR    2   /* Y轴电机地址 */
-#define ARM_MOTOR_R_ADDR    3   /* R轴（自转）电机地址 */
+#define ARM_MOTOR_X_ADDR  1 /* X轴电机地址 */
+#define ARM_MOTOR_Y_ADDR  2 /* Y轴电机地址 */
+#define ARM_MOTOR_R_ADDR  3 /* R轴（自转）电机地址 */
 
 /* ========================== 默认运动参数 ========================== */
-#define ARM_DEFAULT_SPEED   120     /* 默认转速 RPM */
-#define ARM_DEFAULT_ACC     5       /* 默认加速度档位 */
+#define ARM_DEFAULT_SPEED 120 /* 默认转速 RPM */
+#define ARM_DEFAULT_ACC   5   /* 默认加速度档位 */
 
 /* 细分: 16细分 = 3200 脉冲/圈 */
-#define ARM_PULSE_PER_REV   3200U
+#define ARM_PULSE_PER_REV 3200U
 
 /* ========================== 单位换算 ========================== */
-#define ARM_X_MM_PER_REV    40.0f   /*!< X轴丝杆导程 mm/圈  */
-#define ARM_Y_MM_PER_REV    40.0f   /*!< Y轴丝杆导程 mm/圈  */
-#define ARM_R_MM_PER_REV    40.0f   /*!< R轴丝杆导程 mm/圈  */
+#define ARM_X_MM_PER_REV  40.0f /*!< X轴丝杆导程 mm/圈  */
+#define ARM_Y_MM_PER_REV  40.0f /*!< Y轴丝杆导程 mm/圈  */
+#define ARM_R_MM_PER_REV  40.0f /*!< R轴丝杆导程 mm/圈  */
 
 /* 距离 → 脉冲（无符号，绝对位置用） */
-#define ARM_X_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
-#define ARM_Y_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
-#define ARM_R_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_R_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_X_MM_TO_PULSE(mm)                                                  \
+    ((uint32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_Y_MM_TO_PULSE(mm)                                                  \
+    ((uint32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_R_MM_TO_PULSE(mm)                                                  \
+    ((uint32_t)((float)(mm) / ARM_R_MM_PER_REV * (float)ARM_PULSE_PER_REV))
 /* 角度 → 脉冲（无符号） */
-#define ARM_DEG_TO_PULSE(deg) ((uint32_t)((float)(deg) / 360.0f * (float)ARM_PULSE_PER_REV))
+#define ARM_DEG_TO_PULSE(deg)                                                  \
+    ((uint32_t)((float)(deg) / 360.0f * (float)ARM_PULSE_PER_REV))
 
 /* 距离 → 脉冲（有符号，相对位置用） */
-#define ARM_X_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
-#define ARM_Y_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
-#define ARM_R_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_R_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_X_MM_TO_PULSE_S(mm)                                                \
+    ((int32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_Y_MM_TO_PULSE_S(mm)                                                \
+    ((int32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_R_MM_TO_PULSE_S(mm)                                                \
+    ((int32_t)((float)(mm) / ARM_R_MM_PER_REV * (float)ARM_PULSE_PER_REV))
 /* 角度 → 脉冲（有符号） */
-#define ARM_DEG_TO_PULSE_S(deg) ((int32_t)((float)(deg) / 360.0f * (float)ARM_PULSE_PER_REV))
+#define ARM_DEG_TO_PULSE_S(deg)                                                \
+    ((int32_t)((float)(deg) / 360.0f * (float)ARM_PULSE_PER_REV))
 
 /* 方向定义（与 emm42 一致: 0=CW, 1=CCW） */
-#define ARM_DIR_CW   0
-#define ARM_DIR_CCW  1
+#define ARM_DIR_CW  0
+#define ARM_DIR_CCW 1
 
 /* ========================== API ========================== */
 

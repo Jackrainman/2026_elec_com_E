@@ -15,7 +15,9 @@
  */
 void servo_init(servo_t *srv, TIM_HandleTypeDef *htim, uint32_t channel,
                 uint16_t open_pulse_us, uint16_t close_pulse_us) {
-    if (srv == NULL || htim == NULL) return;
+    if (srv == NULL || htim == NULL) {
+        return;
+    }
 
     srv->htim = htim;
     srv->channel = channel;
@@ -33,9 +35,12 @@ void servo_init(servo_t *srv, TIM_HandleTypeDef *htim, uint32_t channel,
  * 将对应的脉冲宽度写入定时器比较寄存器以改变舵机位置。
  */
 HAL_StatusTypeDef servo_set_state(servo_t *srv, servo_state_t state) {
-    if (srv == NULL || srv->htim == NULL) return HAL_ERROR;
+    if (srv == NULL || srv->htim == NULL) {
+        return HAL_ERROR;
+    }
 
-    uint16_t pulse_us = (state == SERVO_CLOSE) ? srv->close_pulse_us : srv->open_pulse_us;
+    uint16_t pulse_us =
+        (state == SERVO_CLOSE) ? srv->close_pulse_us : srv->open_pulse_us;
     __HAL_TIM_SET_COMPARE(srv->htim, srv->channel, pulse_us);
 
     srv->state = state;
@@ -46,7 +51,9 @@ HAL_StatusTypeDef servo_set_state(servo_t *srv, servo_state_t state) {
  * @brief 在打开和关闭之间切换舵机状态并应用
  */
 void servo_toggle(servo_t *srv) {
-    if (srv == NULL || srv->htim == NULL) return;
+    if (srv == NULL || srv->htim == NULL) {
+        return;
+    }
 
     srv->state = (srv->state == SERVO_CLOSE) ? SERVO_OPEN : SERVO_CLOSE;
     servo_set_state(srv, srv->state);
@@ -56,7 +63,9 @@ void servo_toggle(servo_t *srv) {
  * @brief 获取当前舵机状态
  */
 servo_state_t servo_get_state(servo_t *srv) {
-    if (srv == NULL) return SERVO_CLOSE;
+    if (srv == NULL) {
+        return SERVO_CLOSE;
+    }
     return srv->state;
 }
 
@@ -64,6 +73,8 @@ servo_state_t servo_get_state(servo_t *srv) {
  * @brief 直接设置舵机脉冲宽度（微秒）
  */
 void servo_set_pulse_us(servo_t *srv, uint16_t pulse_us) {
-    if (srv == NULL || srv->htim == NULL) return;
+    if (srv == NULL || srv->htim == NULL) {
+        return;
+    }
     __HAL_TIM_SET_COMPARE(srv->htim, srv->channel, pulse_us);
 }
