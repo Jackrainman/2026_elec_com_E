@@ -40,7 +40,7 @@ extern servo_t servo;
 
 /* ========================== 默认运动参数 ========================== */
 #define ARM_DEFAULT_SPEED   60      /* 默认转速 RPM */
-#define ARM_DEFAULT_ACC     1       /* 默认加速度档位 */
+#define ARM_DEFAULT_ACC     100     /* 默认加速度 */
 
 /* 初始化同步确认参数（模仿 2026R1） */
 #define ARM_SYNC_RETRY_TIMES  3    /* 单轴同步重试次数 */

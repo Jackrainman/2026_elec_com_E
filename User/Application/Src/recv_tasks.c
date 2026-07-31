@@ -70,7 +70,6 @@ void arm_ctrl(void *pvParameters) {
     UNUSED(pvParameters);
 
     raspi_serial_data_t command;
-    static uint32_t last_sequence;
     bool first = true;
     int rounds = 0; /* 上位机传入的剩余轮次 */
 
@@ -84,17 +83,20 @@ void arm_ctrl(void *pvParameters) {
                 first = false;
             }
 
-            /* —— 第一段：绝对位置 (X, Y)，叠加相机偏移，R 轴不动 —— */
+            /* —— 第一段：绝对位置 (X, Y)，叠加相机偏移，R 轴同时回原点 —— */
             int32_t  t1_x = ARM_X_MM_TO_PULSE_S(command.x + CAM_X_CORRECT);
             int32_t  t1_y = ARM_Y_MM_TO_PULSE_S(command.y + CAM_Y_CORRECT);
 
-            arm_axis_move(1, t1_x, 0);
+            arm_axis_move(1, t1_x, 100);
             vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(2, t1_y, 0);
+            arm_axis_move(2, t1_y, 100);
+            vTaskDelay(pdMS_TO_TICKS(20));
+            arm_axis_move(3, 0, 100); /* R 轴绝对回零（移植自 main 的 last.th 逻辑） */
             vTaskDelay(pdMS_TO_TICKS(20));
 
-            arm_wait_axis_done(1, t1_x, 200, 5000);
-            arm_wait_axis_done(2, t1_y, 200, 5000);
+            arm_wait_axis_done(1, t1_x, 100, 5000);
+            arm_wait_axis_done(2, t1_y, 100, 5000);
+            arm_wait_axis_done(3, 0, 100, 5000);
 
             /* 第一个坐标到位 → 开气泵，1s 后关 */
             SERVO_DOWN();
@@ -115,25 +117,23 @@ void arm_ctrl(void *pvParameters) {
             }
             SERVO_UP();
 
-            /* —— 第二段：绝对位置 (X1, Y1)，R 轴相对移动，叠加相机偏移 —— */
+            /* —— 第二段：绝对位置 (X1, Y1, th)，叠加相机偏移 —— */
             int32_t  t2_x = ARM_X_MM_TO_PULSE_S(command.x1 + CAM_X_CORRECT);
             int32_t  t2_y = ARM_Y_MM_TO_PULSE_S(command.y1 + CAM_Y_CORRECT);
             int32_t  t2_r = ARM_DEG_TO_PULSE_S(command.th);
 
-            arm_axis_move(1, t2_x, 0);
+            arm_axis_move(1, t2_x, 100);
             vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(2, t2_y, 0);
-            vTaskDelay(pdMS_TO_TICKS(20));
-
-            /* R 轴相对移动：先读取当前位置，计算预期绝对位置用于到位判断 */
-            arm_update_position(3);
-            int32_t  r_expected = arm_get_position_pulse(3) + t2_r;
-            arm_axis_rel_move(3, t2_r, 0);
+            arm_axis_move(2, t2_y, 100);
             vTaskDelay(pdMS_TO_TICKS(20));
 
-            arm_wait_axis_done(1, t2_x, 200, 5000);
-            arm_wait_axis_done(2, t2_y, 200, 5000);
-            arm_wait_axis_done(3, r_expected, 200, 5000);
+            /* 第一段已保证 R 在原点，th 直接作绝对目标 */
+            arm_axis_move(3, t2_r, 100);
+            vTaskDelay(pdMS_TO_TICKS(20));
+
+            arm_wait_axis_done(1, t2_x, 100, 5000);
+            arm_wait_axis_done(2, t2_y, 100, 5000);
+            arm_wait_axis_done(3, t2_r, 100, 5000);
 
             /* 第二个坐标到位 → 开气泵，1s 后关 */
             SERVO_DOWN();
@@ -154,7 +154,7 @@ void arm_ctrl(void *pvParameters) {
             }
             SERVO_UP();
 
-            send_reply("OK\n");
+            send_reply("ok");
             /* 本轮完成，轮次递减 */
             rounds--;
             if (rounds <= 0) {
