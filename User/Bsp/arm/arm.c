@@ -14,6 +14,9 @@
 
 static smd_motor_t arm_motor[3];
 
+/* 各轴通信同步状态：true=初始化时该轴读回位置成功（电机在线） */
+static volatile bool arm_axis_ready[3] = {false, false, false};
+
 /* 轴编号 → 数组索引 */
 #define ARM_AXIS_IDX(axis)  ((axis) - 1)
 
@@ -24,17 +27,62 @@ static const uint8_t arm_axis_addr[3] = {
     ARM_MOTOR_R_ADDR,
 };
 
+/* ========================== 内部函数 ========================== */
+
+/**
+ * @brief  读回指定轴位置并等待应答，确认电机通信在线
+ * @note   模仿 2026R1 lift_wait_smd_sync(): 清 valid_mask -> 发读位置命令 ->
+ *         超时轮询 SMD_MASK_REAL_POS 置位，失败重试
+ * @param  axis  轴编号 (1~3)
+ * @return true=同步成功(电机在线), false=超时(离线或无应答)
+ */
+static bool arm_sync_axis(uint8_t axis)
+{
+    smd_motor_t *motor = &arm_motor[ARM_AXIS_IDX(axis)];
+
+    for (int retry = 0; retry < ARM_SYNC_RETRY_TIMES; retry++) {
+        motor->valid_mask = 0;
+        smd_read_pos(arm_axis_addr[ARM_AXIS_IDX(axis)]);
+
+        TickType_t start = xTaskGetTickCount();
+        while ((motor->valid_mask & SMD_MASK_REAL_POS) == 0U) {
+            if ((xTaskGetTickCount() - start) >= pdMS_TO_TICKS(ARM_SYNC_TIMEOUT_MS)) {
+                break;
+            }
+            vTaskDelay(pdMS_TO_TICKS(1));
+        }
+
+        if ((motor->valid_mask & SMD_MASK_REAL_POS) != 0U) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /* ========================== API 实现 ========================== */
 
 /**
  * @brief  初始化机械臂
+ * @note   上电等待 1s 后，将三个电机当前位置设为零点；
+ *         随后读回各轴位置确认电机在线（用 arm_is_ready() 查询结果）
  */
 void arm_init(void)
 {
     for (int i = 0; i < 3; i++) {
-        smd_motor_init(&arm_motor[i], arm_axis_addr[i]);
-        smd_set_mode(arm_axis_addr[i], 0);
-        smd_motor_enable(arm_axis_addr[i], 0);
+        if (smd_motor_init(&arm_motor[i], arm_axis_addr[i]) != 0) {
+            continue; /* 软件资源初始化失败，arm_axis_ready 保持 false */
+        }
+        vTaskDelay(pdMS_TO_TICKS(20));
+    }
+
+    /* 等待电机上电稳定后，将当前位置清零作为坐标零点 */
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    arm_set_zero();
+
+    /* 模仿 2026R1：读回各轴位置并校验应答，确认电机在线 */
+    for (int i = 0; i < 3; i++) {
+        arm_axis_ready[i] = arm_sync_axis(i + 1);
     }
 }
 
@@ -165,5 +213,26 @@ void arm_set_zero(void)
 {
     for (int i = 0; i < 3; i++) {
         smd_angle_to_zero(arm_axis_addr[i]);
+        vTaskDelay(20);
     }
+}
+
+/**
+ * @brief  查询机械臂是否初始化成功
+ * @return true=三轴均通信同步成功, false=存在离线轴
+ */
+bool arm_is_ready(void)
+{
+    return arm_axis_ready[0] && arm_axis_ready[1] && arm_axis_ready[2];
+}
+
+/**
+ * @brief  查询指定轴是否初始化成功（通信同步成功）
+ * @param  axis  轴编号
+ * @return true=该轴在线, false=离线或无应答
+ */
+bool arm_axis_is_ready(uint8_t axis)
+{
+    if (axis < 1 || axis > 3) return false;
+    return arm_axis_ready[ARM_AXIS_IDX(axis)];
 }

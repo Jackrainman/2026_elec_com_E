@@ -9,9 +9,6 @@
 
 #include "includes.h"
 
-#define CAM_X_CORRECT   40.0f
-#define CAM_Y_CORRECT   17.0f
-
 static TaskHandle_t msg_receive_handle;
 static TaskHandle_t arm_ctrl_handle;
 
@@ -23,8 +20,7 @@ static void arm_ctrl(void *pvParameters);
 /**
  * @brief 创建上位机数据接收相关任务.
  *
- * @note arm_init() 重复调用无害(重新使能电机), 因此本组与 key 组各自调用.
- *       默认只跑 task2(收到指令回 OK, 演示/调试用);
+ * @note arm_init() 本组与 key 组各自调用.
  *       正式使用 msg_receive + arm_ctrl 联动流程时,
  *       请挂起 task2 并恢复下面两个任务, 避免重复应答.
  */
