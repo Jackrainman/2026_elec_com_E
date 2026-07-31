@@ -60,6 +60,28 @@ static bool arm_sync_axis(uint8_t axis)
     return false;
 }
 
+/**
+ * @brief  等待指定轴命令应答
+ * @note   电机收到命令后会回帧：成功或失败都会置 SMD_MASK_INFO，
+ *         带 SMD_MASK_LAST_ERROR 表示从机报错
+ * @param  axis  轴编号 (1~3)
+ * @return true=收到正确应答, false=超时或从机报错
+ */
+static bool arm_wait_cmd_ack(uint8_t axis)
+{
+    smd_motor_t *motor = &arm_motor[ARM_AXIS_IDX(axis)];
+
+    TickType_t start = xTaskGetTickCount();
+    while ((motor->valid_mask & SMD_MASK_INFO) == 0U) {
+        if ((xTaskGetTickCount() - start) >= pdMS_TO_TICKS(ARM_ACK_TIMEOUT_MS)) {
+            return false;
+        }
+        vTaskDelay(pdMS_TO_TICKS(1));
+    }
+
+    return (motor->valid_mask & SMD_MASK_LAST_ERROR) == 0U;
+}
+
 /* ========================== API 实现 ========================== */
 
 /**
@@ -89,14 +111,23 @@ void arm_init(void)
 /**
  * @brief  单轴绝对移动（相对坐标零点）
  */
-void arm_axis_move(uint8_t axis, uint32_t pulse, uint16_t speed)
+void arm_axis_move(uint8_t axis, int32_t pulse, uint16_t speed)
 {
     if (axis < 1 || axis > 3) return;
 
     if (speed == 0) speed = ARM_DEFAULT_SPEED;
 
-    smd_pos_mode(arm_axis_addr[ARM_AXIS_IDX(axis)], ARM_DIR_CW,
-                 ARM_DEFAULT_ACC, speed, pulse);
+    uint8_t  dir       = (pulse >= 0) ? ARM_DIR_CW : ARM_DIR_CCW;
+    uint32_t abs_pulse = (pulse >= 0) ? (uint32_t)pulse
+                                      : (uint32_t)(-(int64_t)pulse);
+
+    /* 清标志 -> 发命令 -> 超时等待应答，失败重试（模仿 2026R1） */
+    for (int retry = 0; retry < ARM_ACK_RETRY_TIMES; retry++) {
+        arm_motor[ARM_AXIS_IDX(axis)].valid_mask = 0;
+        smd_pos_mode(arm_axis_addr[ARM_AXIS_IDX(axis)], dir,
+                     ARM_DEFAULT_ACC, speed, abs_pulse);
+        if (arm_wait_cmd_ack(axis)) return;
+    }
 }
 
 /**
@@ -109,10 +140,16 @@ void arm_axis_rel_move(uint8_t axis, int32_t pulse, uint16_t speed)
     if (speed == 0) speed = ARM_DEFAULT_SPEED;
 
     uint8_t  dir      = (pulse >= 0) ? ARM_DIR_CW : ARM_DIR_CCW;
-    uint32_t abs_pulse = (pulse >= 0) ? (uint32_t)pulse : (uint32_t)(-pulse);
+    uint32_t abs_pulse = (pulse >= 0) ? (uint32_t)pulse
+                                      : (uint32_t)(-(int64_t)pulse);
 
-    smd_pos_rel_mode(arm_axis_addr[ARM_AXIS_IDX(axis)], dir,
-                     ARM_DEFAULT_ACC, speed, abs_pulse);
+    /* 清标志 -> 发命令 -> 超时等待应答，失败重试（模仿 2026R1） */
+    for (int retry = 0; retry < ARM_ACK_RETRY_TIMES; retry++) {
+        arm_motor[ARM_AXIS_IDX(axis)].valid_mask = 0;
+        smd_pos_rel_mode(arm_axis_addr[ARM_AXIS_IDX(axis)], dir,
+                         ARM_DEFAULT_ACC, speed, abs_pulse);
+        if (arm_wait_cmd_ack(axis)) return;
+    }
 }
 
 /**
@@ -141,7 +178,7 @@ void arm_update_position(uint8_t axis)
 /**
  * @brief  等待指定轴运动到位（阻塞式，主动查询位置）
  */
-bool arm_wait_axis_done(uint8_t axis, uint32_t target, uint32_t tolerance,
+bool arm_wait_axis_done(uint8_t axis, int32_t target, uint32_t tolerance,
                         uint32_t timeout_ms)
 {
     if (axis < 1 || axis > 3) return false;
@@ -154,9 +191,9 @@ bool arm_wait_axis_done(uint8_t axis, uint32_t target, uint32_t tolerance,
         arm_update_position(axis);
 
         int32_t cur  = (int32_t)arm_motor[ARM_AXIS_IDX(axis)].real_pos;
-        int32_t diff = (int32_t)cur - (int32_t)target;
+        int64_t diff = (int64_t)cur - (int64_t)target;
         if (diff < 0) diff = -diff;
-        if ((uint32_t)diff <= tolerance) return true;
+        if ((uint64_t)diff <= (uint64_t)tolerance) return true;
 
         if (timeout_ms > 0) {
             if ((xTaskGetTickCount() - start) >= timeout_ticks) {
@@ -200,10 +237,10 @@ void arm_enable_axis(uint8_t axis, bool en)
 /**
  * @brief  读取指定轴当前位置（脉冲数）
  */
-uint32_t arm_get_position_pulse(uint8_t axis)
+int32_t arm_get_position_pulse(uint8_t axis)
 {
     if (axis < 1 || axis > 3) return 0;
-    return (uint32_t)arm_motor[ARM_AXIS_IDX(axis)].real_pos;
+    return arm_motor[ARM_AXIS_IDX(axis)].real_pos;
 }
 
 /**

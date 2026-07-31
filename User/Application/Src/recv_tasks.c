@@ -85,8 +85,8 @@ void arm_ctrl(void *pvParameters) {
             }
 
             /* —— 第一段：绝对位置 (X, Y)，叠加相机偏移，R 轴不动 —— */
-            uint32_t t1_x = ARM_X_MM_TO_PULSE(command.x + CAM_X_CORRECT);
-            uint32_t t1_y = ARM_Y_MM_TO_PULSE(command.y + CAM_Y_CORRECT);
+            int32_t  t1_x = ARM_X_MM_TO_PULSE_S(command.x + CAM_X_CORRECT);
+            int32_t  t1_y = ARM_Y_MM_TO_PULSE_S(command.y + CAM_Y_CORRECT);
 
             arm_axis_move(1, t1_x, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
@@ -108,8 +108,8 @@ void arm_ctrl(void *pvParameters) {
             E_PUMP_OFF();
 
             /* —— 第二段：绝对位置 (X1, Y1)，R 轴相对移动，叠加相机偏移 —— */
-            uint32_t t2_x = ARM_X_MM_TO_PULSE(command.x1 + CAM_X_CORRECT);
-            uint32_t t2_y = ARM_Y_MM_TO_PULSE(command.y1 + CAM_Y_CORRECT);
+            int32_t  t2_x = ARM_X_MM_TO_PULSE_S(command.x1 + CAM_X_CORRECT);
+            int32_t  t2_y = ARM_Y_MM_TO_PULSE_S(command.y1 + CAM_Y_CORRECT);
             int32_t  t2_r = ARM_DEG_TO_PULSE_S(command.th);
 
             arm_axis_move(1, t2_x, 0);
@@ -119,7 +119,7 @@ void arm_ctrl(void *pvParameters) {
 
             /* R 轴相对移动：先读取当前位置，计算预期绝对位置用于到位判断 */
             arm_update_position(3);
-            uint32_t r_expected = (uint32_t)((int32_t)arm_get_position_pulse(3) + t2_r);
+            int32_t  r_expected = arm_get_position_pulse(3) + t2_r;
             arm_axis_rel_move(3, t2_r, 0);
             vTaskDelay(pdMS_TO_TICKS(20));
 
