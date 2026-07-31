@@ -21,8 +21,7 @@ static void arm_ctrl(void *pvParameters);
  * @brief 创建上位机数据接收相关任务.
  *
  * @note arm_init() 本组与 key 组各自调用.
- *       正式使用 msg_receive + arm_ctrl 联动流程时,
- *       请挂起 task2 并恢复下面两个任务, 避免重复应答.
+ *       arm_ctrl 跑完全部轮次后会自挂起, 需要外部恢复才能继续.
  */
 void recv_tasks_init(void) {
     raspi_serial_init(&huart1);
@@ -66,7 +65,7 @@ static void msg_receive(void *pvParameters) {
  *
  * @param pvParameters Start parameters.
  */
-void arm_ctrl(void *pvParameters) {
+static void arm_ctrl(void *pvParameters) {
     UNUSED(pvParameters);
 
     raspi_serial_data_t command;
@@ -120,13 +119,12 @@ void arm_ctrl(void *pvParameters) {
             /* —— 第二段：绝对位置 (X1, Y1, th)，叠加相机偏移 —— */
             int32_t  t2_x = ARM_X_MM_TO_PULSE_S(command.x1 + CAM_X_CORRECT);
             int32_t  t2_y = ARM_Y_MM_TO_PULSE_S(command.y1 + CAM_Y_CORRECT);
-            int32_t  t2_r = ARM_DEG_TO_PULSE_S(command.th);
+            int32_t  t2_r = ARM_DEG_TO_PULSE_S(command.th); // 这里需要确认转向是否正确
 
             arm_axis_move(1, t2_x, 100);
             vTaskDelay(pdMS_TO_TICKS(20));
             arm_axis_move(2, t2_y, 100);
             vTaskDelay(pdMS_TO_TICKS(20));
-
             /* 第一段已保证 R 在原点，th 直接作绝对目标 */
             arm_axis_move(3, t2_r, 100);
             vTaskDelay(pdMS_TO_TICKS(20));
@@ -154,12 +152,19 @@ void arm_ctrl(void *pvParameters) {
             }
             SERVO_UP();
 
+            /* 本轮完成，轮次递减；全部完成后亮灯挂起 */
             send_reply("ok");
-            /* 本轮完成，轮次递减 */
             rounds--;
             if (rounds <= 0) {
                 LED1_ON();
-                first = true; /* 等待下一轮命令时重新读取 rounds */
+                /* 回原点 */
+                // arm_axis_move(1, 0, 100);
+                // vTaskDelay(pdMS_TO_TICKS(20));
+                // arm_axis_move(2, t1_x, 100);
+                // vTaskDelay(pdMS_TO_TICKS(20));
+                // arm_axis_move(3, 0, 100);
+                // vTaskDelay(pdMS_TO_TICKS(1000));
+                vTaskSuspend(NULL);
             }
         }
     }
