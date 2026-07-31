@@ -102,6 +102,11 @@ static void arm_ctrl(void *pvParameters) {
 
             last = command;
 
+            /* 累加增量，供回原点使用 */
+            arm_accum_add(1, dx);
+            arm_accum_add(2, dy);
+            arm_accum_add(3, dr);
+
             /* —— 先读三轴当前位置（总线空闲时查询）—— */
             arm_update_position(1);
             vTaskDelay(pdMS_TO_TICKS(15));
@@ -167,6 +172,11 @@ static void arm_ctrl(void *pvParameters) {
             int32_t dx1 = ARM_X_MM_TO_PULSE_S(command.x1 - command.x);
             int32_t dy1 = ARM_Y_MM_TO_PULSE_S(command.y1 - command.y);
             dr = ARM_DEG_TO_PULSE_S(-command.th);
+
+            /* 累加第二段增量，供回原点使用 */
+            arm_accum_add(1, dx1);
+            arm_accum_add(2, dy1);
+            arm_accum_add(3, dr);
 
             int32_t t2_x = cur1 + dx1;
             int32_t t2_y = cur2 + dy1;

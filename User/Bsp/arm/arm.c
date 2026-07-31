@@ -200,3 +200,66 @@ void arm_set_zero(void) {
         emm42_reset_curpos_to_zero(&arm_motor[i]);
     }
 }
+
+/* ========================== 回原点 ========================== */
+
+/* 各轴累计增量（脉冲），供回原点使用 */
+static int32_t arm_accum_pulse[3] = {0, 0, 0};
+
+/**
+ * @brief  累加一次相对移动的增量（用于回原点）
+ */
+void arm_accum_add(uint8_t axis, int32_t pulse) {
+    if (axis < 1 || axis > 3) {
+        return;
+    }
+    arm_accum_pulse[ARM_AXIS_IDX(axis)] += pulse;
+}
+
+/**
+ * @brief  回原点：按累计增量反向移动所有轴
+ * @note   先读当前各轴位置，再反向相对移动回零点，完成后清零累计
+ */
+void arm_return_home(void) {
+    int32_t back[3];
+
+    /* 记录要回退的总量 */
+    for (int i = 0; i < 3; i++) {
+        back[i] = -arm_accum_pulse[i];
+    }
+
+    /* 清零累计，防止重复回退 */
+    for (int i = 0; i < 3; i++) {
+        arm_accum_pulse[i] = 0;
+    }
+
+    /* 先读各轴当前位置 */
+    arm_update_position(1);
+    vTaskDelay(pdMS_TO_TICKS(15));
+    arm_update_position(2);
+    vTaskDelay(pdMS_TO_TICKS(15));
+    arm_update_position(3);
+    vTaskDelay(pdMS_TO_TICKS(15));
+
+    int32_t cur1 = arm_get_position_pulse(1);
+    int32_t cur2 = arm_get_position_pulse(2);
+    int32_t cur3 = arm_get_position_pulse(3);
+
+    /* 目标 = 当前位置 + 回退量 */
+    int32_t t1 = cur1 + back[0];
+    int32_t t2 = cur2 + back[1];
+    int32_t t3 = cur3 + back[2];
+
+    /* 反向相对移动回原点 */
+    arm_axis_rel_move(1, back[0], 0);
+    vTaskDelay(pdMS_TO_TICKS(20));
+    arm_axis_rel_move(2, back[1], 0);
+    vTaskDelay(pdMS_TO_TICKS(20));
+    arm_axis_rel_move(3, back[2], 0);
+    vTaskDelay(pdMS_TO_TICKS(20));
+
+    /* 等到位 */
+    arm_wait_axis_done(1, t1, 50, 5000);
+    arm_wait_axis_done(2, t2, 50, 5000);
+    arm_wait_axis_done(3, t3, 50, 5000);
+}

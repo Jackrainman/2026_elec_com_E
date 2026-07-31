@@ -29,7 +29,7 @@ void key_tasks_init(void) {
  * KEY0: 脉冲 +200us (角度增大)
  * KEY1: 脉冲 -200us (角度减小)
  * KEY2: 脉冲回中位 1500us
- * WKUP: 气泵点动 (开 500ms 后关)
+ * WKUP: 回原点 (按累计增量反向移动三轴)
  *
  * @param pvParameters Start parameters.
  */
@@ -57,9 +57,8 @@ static void servo_test(void *pvParameters) {
             } break;
 
             case WKUP_PRESS: {
-                MAGNET_ON();
-                vTaskDelay(pdMS_TO_TICKS(2000));
-                MAGNET_OFF();
+                /* 回原点：按累计增量反向移动三轴 */
+                arm_return_home();
             } break;
 
             default:

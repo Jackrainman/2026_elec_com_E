@@ -151,6 +151,20 @@ int32_t arm_get_position_pulse(uint8_t axis);
  */
 void arm_set_zero(void);
 
+/**
+ * @brief  累加一次相对移动的增量（用于回原点）
+ * @note   每次相对移动后调用，内部按轴累计增量脉冲
+ * @param  axis   轴编号
+ * @param  pulse  本次增量脉冲数（正 CW / 负 CCW）
+ */
+void arm_accum_add(uint8_t axis, int32_t pulse);
+
+/**
+ * @brief  回原点：按累计增量反向移动所有轴
+ * @note   移动完成后清空累计增量；阻塞式等到位
+ */
+void arm_return_home(void);
+
 #ifdef __cplusplus
 }
 #endif
