@@ -31,7 +31,7 @@ void arm_init(void)
                          RS485_RE1_GPIO_Port, RS485_RE1_Pin);
         emm42_en_control(&arm_motor[i], true, false);
     }
-    servo_init(&servo, &htim1, TIM_CHANNEL_1, 2500, 500);
+    servo_init(&servo, &htim1, TIM_CHANNEL_1, 1200, 1500);
 }
 
 /**

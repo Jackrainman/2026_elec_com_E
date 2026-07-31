@@ -31,8 +31,8 @@ extern "C" {
 
 /* 舵机 */
 extern servo_t servo;
-#define SERVO_UP()   servo_set_state(&servo, SERVO_OPEN)
-#define SERVO_DOWN() servo_set_state(&servo, SERVO_CLOSE)
+#define SERVO_DOWN()   servo_set_state(&servo, SERVO_OPEN)
+#define SERVO_UP() servo_set_state(&servo, SERVO_CLOSE)
 
 /* ========================== 电机地址配置 ========================== */
 #define ARM_MOTOR_X_ADDR    1   /* X轴电机地址 */

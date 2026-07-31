@@ -23,7 +23,7 @@ extern "C" {
 void freertos_start(void);
 
 /* 任务分组 init, 在 start_task 中手动注释/启用 */
-void key_tasks_init(void);  /* 按键调试机械臂 */
+void key_tasks_init(void);  /* 舵机测试 */
 void recv_tasks_init(void); /* 接收树莓派上位机数据 */
 
 /* Application 模块接口 */

@@ -38,7 +38,7 @@ void start_task(void *pvParameters) {
     // xTaskCreate(task4, "task4", 128, NULL, 2, &task4_handle); /* 已无用, 保留备用 */
 
     /* 按需开关: 手动注释掉不用的一路 init 即可, 无需宏定义 */
-    key_tasks_init();  /* 按键调试机械臂 (只有用 KEY 时需要) */
+    key_tasks_init();  /* 舵机测试 (只有用 KEY 时需要) */
     recv_tasks_init(); /* 接收树莓派上位机数据 (只有接上位机时需要) */
 
     vTaskDelete(NULL);

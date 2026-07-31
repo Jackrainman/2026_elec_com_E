@@ -86,11 +86,11 @@ typedef enum {
 #define LED3_TOGGLE()                                                          \
     HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin)
 
-/* PUMP */
-#define PUMP_ON()                                                              \
-    HAL_GPIO_WritePin(PUMP_GPIO_Port, PUMP_Pin, GPIO_PIN_SET)
-#define PUMP_OFF()                                                             \
-    HAL_GPIO_WritePin(PUMP_GPIO_Port, PUMP_Pin, GPIO_PIN_RESET)
+/* MAGNET */
+#define MAGNET_ON()                                                            \
+    HAL_GPIO_WritePin(MAGNET_GPIO_Port, MAGNET_Pin, GPIO_PIN_SET)
+#define MAGNET_OFF()                                                           \
+    HAL_GPIO_WritePin(MAGNET_GPIO_Port, MAGNET_Pin, GPIO_PIN_RESET)
 
 /* USER CODE END Private defines */
 

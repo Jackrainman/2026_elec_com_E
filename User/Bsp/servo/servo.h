@@ -30,5 +30,6 @@ void servo_init(servo_t *srv, TIM_HandleTypeDef *htim, uint32_t channel,
 HAL_StatusTypeDef servo_set_state(servo_t *srv, servo_state_t state);
 void servo_toggle(servo_t *srv);
 servo_state_t servo_get_state(servo_t *srv);
+void servo_set_pulse_us(servo_t *srv, uint16_t pulse_us);
 
 #endif /* __SERVO_H */

@@ -10,8 +10,8 @@
 #include "includes.h"
 
 /* 单位mm */
-#define CAM_X_CORRECT 32.0f
-#define CAM_Y_CORRECT 160.0f
+#define CAM_X_CORRECT 40.0f
+#define CAM_Y_CORRECT 8.0f
 
 static TaskHandle_t msg_receive_handle;
 static TaskHandle_t arm_ctrl_handle;
@@ -141,7 +141,7 @@ static void arm_ctrl(void *pvParameters) {
                     vTaskDelay(1);
                 }
             }
-            PUMP_ON();
+            MAGNET_ON();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
@@ -193,7 +193,7 @@ static void arm_ctrl(void *pvParameters) {
                     vTaskDelay(1);
                 }
             }
-            PUMP_OFF();
+            MAGNET_OFF();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
