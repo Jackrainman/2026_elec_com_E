@@ -30,53 +30,59 @@ extern "C" {
 
 /* 舵机 */
 extern servo_t servo;
-#define SERVO_UP()   servo_set_state(&servo, SERVO_OPEN)
-#define SERVO_DOWN() servo_set_state(&servo, SERVO_CLOSE)
+#define SERVO_DOWN()         servo_set_state(&servo, SERVO_OPEN)
+#define SERVO_UP()           servo_set_state(&servo, SERVO_CLOSE)
 
 /* ========================== 电机地址配置 ========================== */
-#define ARM_MOTOR_X_ADDR    1   /* X轴电机地址 */
-#define ARM_MOTOR_Y_ADDR    2   /* Y轴电机地址 */
-#define ARM_MOTOR_R_ADDR    3   /* R轴（自转）电机地址 */
+#define ARM_MOTOR_X_ADDR     1 /* X轴电机地址 */
+#define ARM_MOTOR_Y_ADDR     2 /* Y轴电机地址 */
+#define ARM_MOTOR_R_ADDR     3 /* R轴（自转）电机地址 */
 
 /* ========================== 默认运动参数 ========================== */
-#define ARM_DEFAULT_SPEED   60      /* 默认转速 RPM */
-#define ARM_DEFAULT_ACC     100     /* 默认加速度 */
+#define ARM_DEFAULT_SPEED    60  /* 默认转速 RPM */
+#define ARM_DEFAULT_ACC      100 /* 默认加速度 */
 
 /* 初始化同步确认参数（模仿 2026R1） */
-#define ARM_SYNC_RETRY_TIMES  3    /* 单轴同步重试次数 */
-#define ARM_SYNC_TIMEOUT_MS   50   /* 单次等待应答超时 (ms) */
+#define ARM_SYNC_RETRY_TIMES 3  /* 单轴同步重试次数 */
+#define ARM_SYNC_TIMEOUT_MS  50 /* 单次等待应答超时 (ms) */
 
 /* 命令发送确认参数（模仿 2026R1 lift_send_smd_pos_cmd） */
-#define ARM_ACK_RETRY_TIMES   3    /* 单条命令发送重试次数 */
-#define ARM_ACK_TIMEOUT_MS    100  /* 单次等待命令应答超时 (ms) */
+#define ARM_ACK_RETRY_TIMES  3   /* 单条命令发送重试次数 */
+#define ARM_ACK_TIMEOUT_MS   100 /* 单次等待命令应答超时 (ms) */
 
 /* 细分: 51200 脉冲/圈（按实际电机细分设置修改） */
-#define ARM_PULSE_PER_REV   51200U
+#define ARM_PULSE_PER_REV    51200U
 
 /* ========================== 单位换算 ========================== */
-#define ARM_X_MM_PER_REV    40.0f   /*!< X轴丝杆导程 mm/圈  */
-#define ARM_Y_MM_PER_REV    40.0f   /*!< Y轴丝杆导程 mm/圈  */
-#define ARM_DEG_PER_REV     360.0f  /*!< 角度 °/圈         */
+#define ARM_X_MM_PER_REV     40.0f  /*!< X轴丝杆导程 mm/圈  */
+#define ARM_Y_MM_PER_REV     40.0f  /*!< Y轴丝杆导程 mm/圈  */
+#define ARM_DEG_PER_REV      360.0f /*!< 角度 °/圈         */
 
 /* 距离 → 脉冲（无符号，绝对位置用） */
-#define ARM_X_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
-#define ARM_Y_MM_TO_PULSE(mm)  ((uint32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_X_MM_TO_PULSE(mm)                                                  \
+    ((uint32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_Y_MM_TO_PULSE(mm)                                                  \
+    ((uint32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
 /* 角度 → 脉冲（无符号） */
-#define ARM_DEG_TO_PULSE(deg)  ((uint32_t)((float)(deg) / ARM_DEG_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_DEG_TO_PULSE(deg)                                                  \
+    ((uint32_t)((float)(deg) / ARM_DEG_PER_REV * (float)ARM_PULSE_PER_REV))
 
 /* 距离 → 脉冲（有符号，相对位置用） */
-#define ARM_X_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
-#define ARM_Y_MM_TO_PULSE_S(mm)  ((int32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_X_MM_TO_PULSE_S(mm)                                                \
+    ((int32_t)((float)(mm) / ARM_X_MM_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_Y_MM_TO_PULSE_S(mm)                                                \
+    ((int32_t)((float)(mm) / ARM_Y_MM_PER_REV * (float)ARM_PULSE_PER_REV))
 /* 角度 → 脉冲（有符号） */
-#define ARM_DEG_TO_PULSE_S(deg)  ((int32_t)((float)(deg) / ARM_DEG_PER_REV * (float)ARM_PULSE_PER_REV))
+#define ARM_DEG_TO_PULSE_S(deg)                                                \
+    ((int32_t)((float)(deg) / ARM_DEG_PER_REV * (float)ARM_PULSE_PER_REV))
 
 /* ========================== 相机坐标系偏移 ========================== */
-#define CAM_X_CORRECT (-13.0f)  /*!< X轴初始坐标系偏移 (mm) */              // 待测
-#define CAM_Y_CORRECT (-32.0f)  /*!< Y轴初始坐标系偏移 (mm) */              // 待测
+#define CAM_X_CORRECT (-13.0f) /*!< X轴初始坐标系偏移 (mm) */ // 待测
+#define CAM_Y_CORRECT (-32.0f) /*!< Y轴初始坐标系偏移 (mm) */ // 待测
 
 /* 方向定义（与 SMD 驱动一致: 0=CW, 1=CCW） */
-#define ARM_DIR_CW   0
-#define ARM_DIR_CCW  1
+#define ARM_DIR_CW    0
+#define ARM_DIR_CCW   1
 
 /* ========================== API ========================== */
 

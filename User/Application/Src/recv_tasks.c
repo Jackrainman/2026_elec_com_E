@@ -48,8 +48,7 @@ static void msg_receive(void *pvParameters) {
 
     while (1) {
         if (raspi_serial_get_latest(&command) &&
-            command.sequence != last_sequence &&
-            command.x != last_x) {
+            command.sequence != last_sequence && command.x != last_x) {
             last_sequence = command.sequence;
             last_x = command.x;
             /* 通知 arm_ctrl 有新坐标 */
@@ -83,14 +82,15 @@ static void arm_ctrl(void *pvParameters) {
             }
 
             /* —— 第一段：绝对位置 (X, Y)，叠加相机偏移，R 轴同时回原点 —— */
-            int32_t  t1_x = ARM_X_MM_TO_PULSE_S(command.x + CAM_X_CORRECT);
-            int32_t  t1_y = ARM_Y_MM_TO_PULSE_S(command.y + CAM_Y_CORRECT);
+            int32_t t1_x = ARM_X_MM_TO_PULSE_S(command.x + CAM_X_CORRECT);
+            int32_t t1_y = ARM_Y_MM_TO_PULSE_S(command.y + CAM_Y_CORRECT);
 
             arm_axis_move(1, t1_x, 100);
             vTaskDelay(pdMS_TO_TICKS(20));
             arm_axis_move(2, t1_y, 100);
             vTaskDelay(pdMS_TO_TICKS(20));
-            arm_axis_move(3, 0, 100); /* R 轴绝对回零（移植自 main 的 last.th 逻辑） */
+            arm_axis_move(
+                3, 0, 100); /* R 轴绝对回零（移植自 main 的 last.th 逻辑） */
             vTaskDelay(pdMS_TO_TICKS(20));
 
             arm_wait_axis_done(1, t1_x, 100, 5000);
@@ -106,7 +106,7 @@ static void arm_ctrl(void *pvParameters) {
                     vTaskDelay(1);
                 }
             }
-            PUMP_ON();
+            MAGNET_ON();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
@@ -117,9 +117,10 @@ static void arm_ctrl(void *pvParameters) {
             SERVO_UP();
 
             /* —— 第二段：绝对位置 (X1, Y1, th)，叠加相机偏移 —— */
-            int32_t  t2_x = ARM_X_MM_TO_PULSE_S(command.x1 + CAM_X_CORRECT);
-            int32_t  t2_y = ARM_Y_MM_TO_PULSE_S(command.y1 + CAM_Y_CORRECT);
-            int32_t  t2_r = ARM_DEG_TO_PULSE_S(command.th); // 这里需要确认转向是否正确
+            int32_t t2_x = ARM_X_MM_TO_PULSE_S(command.x1 + CAM_X_CORRECT);
+            int32_t t2_y = ARM_Y_MM_TO_PULSE_S(command.y1 + CAM_Y_CORRECT);
+            int32_t t2_r =
+                ARM_DEG_TO_PULSE_S(command.th); // 这里需要确认转向是否正确
 
             arm_axis_move(1, t2_x, 100);
             vTaskDelay(pdMS_TO_TICKS(20));
@@ -142,7 +143,7 @@ static void arm_ctrl(void *pvParameters) {
                     vTaskDelay(1);
                 }
             }
-            PUMP_OFF();
+            MAGNET_OFF();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
