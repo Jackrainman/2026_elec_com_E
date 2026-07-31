@@ -133,8 +133,15 @@ static void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(3, t1_r, 50, 5000);
 
             /* 第一个坐标到位 → 开气泵，1s 后关 */
-            PUMP_ON();
             SERVO_DOWN();
+            {
+                TickType_t xPumpTick = xTaskGetTickCount();
+                while ((xTaskGetTickCount() - xPumpTick) <
+                       pdMS_TO_TICKS(1000)) {
+                    vTaskDelay(1);
+                }
+            }
+            PUMP_ON();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
