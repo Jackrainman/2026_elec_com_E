@@ -59,3 +59,13 @@ servo_state_t servo_get_state(servo_t *srv) {
     if (srv == NULL) return SERVO_CLOSE;
     return srv->state;
 }
+
+/**
+ * @brief 直接设置舵机脉冲宽度（微秒）
+ */
+void servo_set_pulse_us(servo_t *srv, uint16_t pulse_us) {
+    if (srv == NULL || srv->htim == NULL) {
+        return;
+    }
+    __HAL_TIM_SET_COMPARE(srv->htim, srv->channel, pulse_us);
+}

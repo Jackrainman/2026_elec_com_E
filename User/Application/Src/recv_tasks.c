@@ -135,7 +135,7 @@ static void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(3, t2_r, 100, 5000);
 
             /* 第二个坐标到位 → 开气泵，1s 后关 */
-            SERVO_DOWN();
+            servo_set_pulse_us(&servo, 1350);
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
