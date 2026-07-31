@@ -46,6 +46,10 @@ extern servo_t servo;
 #define ARM_SYNC_RETRY_TIMES  3    /* 单轴同步重试次数 */
 #define ARM_SYNC_TIMEOUT_MS   50   /* 单次等待应答超时 (ms) */
 
+/* 命令发送确认参数（模仿 2026R1 lift_send_smd_pos_cmd） */
+#define ARM_ACK_RETRY_TIMES   3    /* 单条命令发送重试次数 */
+#define ARM_ACK_TIMEOUT_MS    100  /* 单次等待命令应答超时 (ms) */
+
 /* 细分: 51200 脉冲/圈（按实际电机细分设置修改） */
 #define ARM_PULSE_PER_REV   51200U
 
@@ -100,14 +104,16 @@ bool arm_axis_is_ready(uint8_t axis);
 
 /**
  * @brief  单轴绝对移动（相对坐标零点）
+ * @note   阻塞式：发送后等待电机应答，失败自动重试 ARM_ACK_RETRY_TIMES 次
  * @param  axis   轴编号：1=X, 2=Y, 3=R
- * @param  pulse  目标脉冲数
+ * @param  pulse  目标脉冲数 (正 CW / 负 CCW)
  * @param  speed  转速（RPM），填0则使用默认值
  */
-void arm_axis_move(uint8_t axis, uint32_t pulse, uint16_t speed);
+void arm_axis_move(uint8_t axis, int32_t pulse, uint16_t speed);
 
 /**
  * @brief  单轴相对移动
+ * @note   阻塞式：发送后等待电机应答，失败自动重试 ARM_ACK_RETRY_TIMES 次
  * @param  axis   轴编号
  * @param  pulse  相对脉冲数 (正 CW / 负 CCW)
  * @param  speed  转速（RPM），填0则使用默认值
@@ -132,12 +138,12 @@ void arm_update_position(uint8_t axis);
 /**
  * @brief  等待指定轴运动到位（阻塞式，主动查询位置）
  * @param  axis       轴编号
- * @param  target     目标脉冲数
+ * @param  target     目标脉冲数 (正 CW / 负 CCW)
  * @param  tolerance  到位容差（脉冲数），建议 50 ~ 200
  * @param  timeout_ms 超时（ms），填 0 则永不超时
  * @return true=到位, false=超时
  */
-bool arm_wait_axis_done(uint8_t axis, uint32_t target, uint32_t tolerance,
+bool arm_wait_axis_done(uint8_t axis, int32_t target, uint32_t tolerance,
                         uint32_t timeout_ms);
 
 /**
@@ -162,7 +168,7 @@ void arm_enable_axis(uint8_t axis, bool en);
  * @param  axis  轴编号
  * @return 当前位置脉冲数
  */
-uint32_t arm_get_position_pulse(uint8_t axis);
+int32_t arm_get_position_pulse(uint8_t axis);
 
 /**
  * @brief  将全部轴当前位置清零（设为坐标原点）
