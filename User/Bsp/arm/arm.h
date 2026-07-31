@@ -77,8 +77,8 @@ extern servo_t servo;
     ((int32_t)((float)(deg) / ARM_DEG_PER_REV * (float)ARM_PULSE_PER_REV))
 
 /* ========================== 相机坐标系偏移 ========================== */
-#define CAM_X_CORRECT (-13.0f) /*!< X轴初始坐标系偏移 (mm) */ // 待测
-#define CAM_Y_CORRECT (-32.0f) /*!< Y轴初始坐标系偏移 (mm) */ // 待测
+#define CAM_X_CORRECT (-265.0f) /*!< X轴初始坐标系偏移 (mm) */ // 待测
+#define CAM_Y_CORRECT (-300.0f) /*!< Y轴初始坐标系偏移 (mm) */ // 待测
 
 /* 方向定义（与 SMD 驱动一致: 0=CW, 1=CCW） */
 #define ARM_DIR_CW    0

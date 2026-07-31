@@ -43,7 +43,7 @@ void start_task(void *pvParameters) {
 
     /* 按需开�?: 手动注释掉不用的一�? init 即可, 无需宏定�? */
     key_tasks_init();  /* 按键调试机�?�臂 (�?有用 KEY 时需�?) */
-    // recv_tasks_init(); /* 接收树莓派上位机数据 (�?有接上位机时需�?) */
+    recv_tasks_init(); /* 接收树莓派上位机数据 (�?有接上位机时需�?) */
 
     vTaskDelete(NULL);
 }

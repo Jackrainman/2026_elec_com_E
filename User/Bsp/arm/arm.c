@@ -106,6 +106,9 @@ void arm_init(void)
     vTaskDelay(pdMS_TO_TICKS(1000));
     arm_set_zero();
 
+    /* 设置Y轴(2号电机)速度/位置环最大力矩限制为6000mA */
+    smd_set_pos_torque(ARM_MOTOR_Y_ADDR, 6000);
+
     /* 模仿 2026R1：读回各轴位置并校验应答，确认电机在线 */
     for (int i = 0; i < 3; i++) {
         arm_axis_ready[i] = arm_sync_axis(i + 1);
