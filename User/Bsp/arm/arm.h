@@ -1,12 +1,15 @@
 /**
  ****************************************************************************************************
- * @file        arm.h
- * @brief       三轴机械臂控制模块 (基于正点原子 SMD 步进电机)
- *              - X轴 / Y轴 平面运动
- *              - R轴 末端自转
- * @note        轴编号约定：
- *              1: X轴, 2: Y轴, 3: R轴（自转）
- *              所有电机共用一路串口总线
+ * @file    arm.h
+ * @author  xinglu
+ * @brief   三轴机械臂控制模块 (基于正点原子SMD步进电机)
+ *          - X轴 / Y轴 平面运动
+ *          - R轴 末端自转
+ * @version 1.0
+ * @date    2026-07-31
+ * @note    轴编号约定：
+ *          1: X轴, 2: Y轴, 3: R轴（自转）
+ *          所有电机共用一路 RS485 总线 (UART4)
  ****************************************************************************************************
  */
 
@@ -15,10 +18,20 @@
 
 #include "stdint.h"
 #include "stdbool.h"
+#include "servo/servo.h"
+#include "atk_smd/smd.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "tim.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* 舵机 */
+extern servo_t servo;
+#define SERVO_UP()   servo_set_state(&servo, SERVO_OPEN)
+#define SERVO_DOWN() servo_set_state(&servo, SERVO_CLOSE)
 
 /* ========================== 电机地址配置 ========================== */
 #define ARM_MOTOR_X_ADDR    1   /* X轴电机地址 */

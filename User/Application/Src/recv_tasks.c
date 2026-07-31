@@ -97,15 +97,23 @@ void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(2, t1_y, 200, 5000);
 
             /* 第一个坐标到位 → 开气泵，1s 后关 */
-            PUMP_ON();
-            E_PUMP_ON();
+            SERVO_DOWN();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
-                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(1000)) {
+                while ((xTaskGetTickCount() - xPumpTick) <
+                       pdMS_TO_TICKS(1000)) {
                     vTaskDelay(1);
                 }
             }
-            E_PUMP_OFF();
+            PUMP_ON();
+            {
+                TickType_t xPumpTick = xTaskGetTickCount();
+                while ((xTaskGetTickCount() - xPumpTick) <
+                       pdMS_TO_TICKS(1000)) {
+                    vTaskDelay(1);
+                }
+            }
+            SERVO_UP();
 
             /* —— 第二段：绝对位置 (X1, Y1)，R 轴相对移动，叠加相机偏移 —— */
             uint32_t t2_x = ARM_X_MM_TO_PULSE(command.x1 + CAM_X_CORRECT);
@@ -128,21 +136,23 @@ void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(3, r_expected, 200, 5000);
 
             /* 第二个坐标到位 → 开气泵，1s 后关 */
-            E_PUMP_ON();
+            SERVO_DOWN();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
-                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(1000)) {
+                while ((xTaskGetTickCount() - xPumpTick) <
+                       pdMS_TO_TICKS(1000)) {
                     vTaskDelay(1);
                 }
             }
             PUMP_OFF();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
-                while ((xTaskGetTickCount() - xPumpTick) < pdMS_TO_TICKS(1000)) {
+                while ((xTaskGetTickCount() - xPumpTick) <
+                       pdMS_TO_TICKS(1000)) {
                     vTaskDelay(1);
                 }
             }
-            E_PUMP_OFF();
+            SERVO_UP();
 
             send_reply("OK\n");
             /* 本轮完成，轮次递减 */
