@@ -21,6 +21,7 @@ virtualFolder:
         - path: User/Bsp/emm42/emm42.c
         - path: User/Bsp/arm/arm.c
         - path: User/Bsp/raspi_serial/raspi_serial.c
+        - path: User/Bsp/servo/servo.c
       folders: []
     - name: Application
       files:
@@ -58,7 +59,7 @@ virtualFolder:
       folders:
         - name: startup
           files:
-                - path: CubeMX/Drivers/CMSIS/Device/ST/STM32G4xx/Source/gcc/startup_stm32g474xx.S
+            - path: CubeMX/Drivers/CMSIS/Device/ST/STM32G4xx/Source/gcc/startup_stm32g474xx.S
           folders: []
 dependenceList: []
 outDir: Build

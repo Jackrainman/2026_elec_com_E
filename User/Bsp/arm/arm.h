@@ -15,10 +15,21 @@
 
 #include "stdint.h"
 #include "stdbool.h"
+#include "servo/servo.h"
+#include "emm42/emm42.h"
+#include "usart_ex/usart_ex.h"
+#include "tim.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* 舵机 */
+extern servo_t servo;
+#define SERVO_UP()   servo_set_state(&servo, SERVO_OPEN)
+#define SERVO_DOWN() servo_set_state(&servo, SERVO_CLOSE)
 
 /* ========================== 电机地址配置 ========================== */
 #define ARM_MOTOR_X_ADDR    1   /* X轴电机地址 */

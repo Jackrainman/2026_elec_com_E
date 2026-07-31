@@ -134,7 +134,7 @@ static void arm_ctrl(void *pvParameters) {
 
             /* 第一个坐标到位 → 开气泵，1s 后关 */
             PUMP_ON();
-            E_PUMP_ON();
+            SERVO_DOWN();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
@@ -142,7 +142,7 @@ static void arm_ctrl(void *pvParameters) {
                     vTaskDelay(1);
                 }
             }
-            E_PUMP_OFF();
+            SERVO_UP();
 
             /* —— 再读位置，算第二段目标（XY + R）—— */
             arm_update_position(1);
@@ -178,7 +178,7 @@ static void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(3, t2_r, 10, 5000);
 
             /* 第二个坐标到位 → 开气泵，1s 后关 */
-            E_PUMP_ON();
+            SERVO_DOWN();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
@@ -194,7 +194,7 @@ static void arm_ctrl(void *pvParameters) {
                     vTaskDelay(1);
                 }
             }
-            E_PUMP_OFF();
+            SERVO_UP();
 
             /* 本轮完成，轮次递减；全部完成后亮灯挂起 */
             send_reply("ok");
