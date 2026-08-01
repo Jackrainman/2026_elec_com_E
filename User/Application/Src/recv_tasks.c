@@ -114,7 +114,13 @@ static void arm_ctrl(void *pvParameters) {
                 }
             }
             SERVO_UP();
-
+            {
+                TickType_t xPumpTick = xTaskGetTickCount();
+                while ((xTaskGetTickCount() - xPumpTick) <
+                       pdMS_TO_TICKS(2000)) {
+                    vTaskDelay(1);
+                }
+            }
             /* —— 第二段：绝对位置 (X1, Y1, th)，叠加相机偏移 —— */
             int32_t t2_x = ARM_X_MM_TO_PULSE_S(command.x1 + CAM_X_CORRECT);
             int32_t t2_y = ARM_Y_MM_TO_PULSE_S(command.y1 + CAM_Y_CORRECT);
@@ -134,7 +140,16 @@ static void arm_ctrl(void *pvParameters) {
             arm_wait_axis_done(3, t2_r, 100, 2000);
 
             /* 第二个坐标到位 → 开气泵，1s 后关 */
-            servo_set_pulse_us(&servo, 1350);
+            // servo_set_pulse_us(&servo, 1350);
+            // {
+            //     TickType_t xPumpTick = xTaskGetTickCount();
+            //     while ((xTaskGetTickCount() - xPumpTick) <
+            //            pdMS_TO_TICKS(1000)) {
+            //         vTaskDelay(1);
+            //     }
+            // }
+            // MAGNET_OFF();
+            servo_set_pulse_us(&servo, 1700);
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
@@ -142,15 +157,6 @@ static void arm_ctrl(void *pvParameters) {
                     vTaskDelay(1);
                 }
             }
-            MAGNET_OFF();
-            {
-                TickType_t xPumpTick = xTaskGetTickCount();
-                while ((xTaskGetTickCount() - xPumpTick) <
-                       pdMS_TO_TICKS(1000)) {
-                    vTaskDelay(1);
-                }
-            }
-            SERVO_UP();
 
             /* 本轮完成，轮次递减；全部完成后亮灯挂起 */
             send_reply("ok");
