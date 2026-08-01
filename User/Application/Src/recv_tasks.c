@@ -92,9 +92,9 @@ static void arm_ctrl(void *pvParameters) {
             arm_axis_move(3, 0, 100); /* R 轴绝对回零（移植自 main 的 last.th 逻辑） */
             vTaskDelay(pdMS_TO_TICKS(20));
 
-            arm_wait_axis_done(1, t1_x, 100, 4000);
-            arm_wait_axis_done(2, t1_y, 100, 4000);
-            arm_wait_axis_done(3, 0, 100, 4000);
+            arm_wait_axis_done(1, t1_x, 200, 2000);
+            arm_wait_axis_done(2, t1_y, 200, 2000);
+            arm_wait_axis_done(3, 0, 100, 2000);
 
             /* 第一个坐标到位 → 开气泵，1s 后关 */
             SERVO_DOWN();
@@ -129,9 +129,9 @@ static void arm_ctrl(void *pvParameters) {
             arm_axis_move(3, t2_r, 100);
             vTaskDelay(pdMS_TO_TICKS(20));
 
-            arm_wait_axis_done(1, t2_x, 100, 4000);
-            arm_wait_axis_done(2, t2_y, 100, 4000);
-            arm_wait_axis_done(3, t2_r, 100, 4000);
+            arm_wait_axis_done(1, t2_x, 200, 2000);
+            arm_wait_axis_done(2, t2_y, 200, 2000);
+            arm_wait_axis_done(3, t2_r, 100, 2000);
 
             /* 第二个坐标到位 → 开气泵，1s 后关 */
             servo_set_pulse_us(&servo, 1350);

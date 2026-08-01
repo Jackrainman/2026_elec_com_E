@@ -26,14 +26,14 @@ void key_tasks_init(void) {
 }
 
 /**
- * @brief Arm test task: 按键控制机械臂动作
- *        X/Y/R 均使用相对移动，WKUP 回零用绝对位置
+ * @brief Arm test task: 按键控制机械臂绝对运动
+ *        各键对应固定的绝对目标位置，叠加相机坐标系偏移
  *
  * 实际动作 (以代码为准, 现场按需直接改数值):
- * KEY0: X +100mm, Y +50mm,  R 不动
- * KEY1: X -30mm,  Y -30mm,  R -90°
- * KEY2: X +100mm, Y +100mm, R +270°
- * WKUP: X/Y 绝对回零,       R -180°
+ * KEY0: X=100mm,  Y=50mm,   R=0°
+ * KEY1: X=-30mm,  Y=-30mm,  R=-90°
+ * KEY2: X=100mm,  Y=100mm,  R=270°
+ * WKUP: X=0mm,    Y=0mm,    R=-180°  (回零，叠加偏移)
  *
  * LED2 亮 = 电机离线 (arm_init 同步失败)
  *
@@ -52,39 +52,55 @@ static void arm_test(void *pvParameters) {
         key = key_scan(0);
         switch (key) {
             case KEY0_PRESS: {
-                /* X/Y +5cm, R +90° */
-                arm_axis_rel_move(1, (int32_t)ARM_X_MM_TO_PULSE(100), 100);
+                /* 绝对位置: X=100mm, Y=50mm, R=0° */
+                int32_t tx = ARM_X_MM_TO_PULSE_S(50.0f + CAM_X_CORRECT);
+                int32_t ty = ARM_Y_MM_TO_PULSE_S(82.0f + CAM_Y_CORRECT);
+                int32_t tr = ARM_DEG_TO_PULSE_S(0.0f);
+
+                arm_axis_move(1, tx, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_rel_move(2, (int32_t)ARM_Y_MM_TO_PULSE(50), 100);
+                arm_axis_move(2, ty, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_rel_move(3, (int32_t)ARM_DEG_TO_PULSE(0), 100);
+                arm_axis_move(3, tr, 100);
             } break;
 
             case KEY1_PRESS: {
-                /* X/Y -3cm, R -90° */
-                arm_axis_rel_move(1, -(int32_t)ARM_X_MM_TO_PULSE(30), 100);
+                /* 绝对位置: X=-30mm, Y=-30mm, R=-90° */
+                int32_t tx = ARM_X_MM_TO_PULSE_S(0.0f + CAM_X_CORRECT);
+                int32_t ty = ARM_Y_MM_TO_PULSE_S(0.0f + CAM_Y_CORRECT);
+                int32_t tr = ARM_DEG_TO_PULSE_S(-90.0f);
+
+                arm_axis_move(1, tx, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_rel_move(2, -(int32_t)ARM_Y_MM_TO_PULSE(30), 100);
+                arm_axis_move(2, ty, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_rel_move(3, -(int32_t)ARM_DEG_TO_PULSE(90), 100);
+                arm_axis_move(3, tr, 100);
             } break;
 
             case KEY2_PRESS: {
-                /* X/Y +10cm, R +270° */
-                arm_axis_rel_move(1, (int32_t)ARM_X_MM_TO_PULSE(100), 100);
+                /* 绝对位置: X=100mm, Y=100mm, R=270° */
+                int32_t tx = ARM_X_MM_TO_PULSE_S(100.0f + CAM_X_CORRECT);
+                int32_t ty = ARM_Y_MM_TO_PULSE_S(100.0f + CAM_Y_CORRECT);
+                int32_t tr = ARM_DEG_TO_PULSE_S(270.0f);
+
+                arm_axis_move(1, tx, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_rel_move(2, (int32_t)ARM_Y_MM_TO_PULSE(100), 100);
+                arm_axis_move(2, ty, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_rel_move(3, (int32_t)ARM_DEG_TO_PULSE(270), 100);
+                arm_axis_move(3, tr, 100);
             } break;
 
             case WKUP_PRESS: {
-                /* X/Y 回零点, R -180° */
-                arm_axis_move(1, 0, 100);
+                /* 回零: X=0mm, Y=0mm, R=-180°（叠加偏移量） */
+                int32_t tx = ARM_X_MM_TO_PULSE_S(0.0f + CAM_X_CORRECT);
+                int32_t ty = ARM_Y_MM_TO_PULSE_S(50.0f + CAM_Y_CORRECT);
+                int32_t tr = ARM_DEG_TO_PULSE_S(-180.0f);
+
+                arm_axis_move(1, tx, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(2, 0, 100);
+                arm_axis_move(2, ty, 100);
                 vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_rel_move(3, -(int32_t)ARM_DEG_TO_PULSE(180), 100);
+                arm_axis_move(3, tr, 100);
             } break;
 
             default:
