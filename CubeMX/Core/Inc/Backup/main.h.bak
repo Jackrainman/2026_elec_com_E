@@ -73,10 +73,10 @@ void Error_Handler(void);
 #define LED2_GPIO_Port GPIOE
 #define LED3_Pin GPIO_PIN_9
 #define LED3_GPIO_Port GPIOE
-#define E_PUMP_Pin GPIO_PIN_10
-#define E_PUMP_GPIO_Port GPIOB
-#define PUMP_Pin GPIO_PIN_11
-#define PUMP_GPIO_Port GPIOB
+#define MAGNET_Pin GPIO_PIN_11
+#define MAGNET_GPIO_Port GPIOB
+#define RS485_RE1_Pin GPIO_PIN_14
+#define RS485_RE1_GPIO_Port GPIOD
 #define RS485_RE2_Pin GPIO_PIN_4
 #define RS485_RE2_GPIO_Port GPIOB
 

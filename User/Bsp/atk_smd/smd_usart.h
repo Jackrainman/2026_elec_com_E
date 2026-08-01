@@ -1,11 +1,11 @@
 /**
  * @file smd_usart.h
- * @author PickingChip 
+ * @author PickingChip
  * @brief 正点原子 步进电机驱动器 USART通信代码
  * @version 0.2
  * @date 2026-04-03
- * 
- * 
+ *
+ *
  */
 
 #ifndef __SMD_USART_H
@@ -17,8 +17,8 @@
 
 /******************************************************************************************/
 
-#define RX_BUFFER_SIZE 128
-#define SMD_UART       (&huart5)
+#define RX_BUFFER_SIZE 256
+#define SMD_UART       (&huart4)
 
 /******************************************************************************************/
 /* 控制RS485_RE脚, 控制RS485发送/接收状态

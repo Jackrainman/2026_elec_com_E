@@ -4,8 +4,8 @@
  * @brief 简略的树莓派串口通信协议
  * @version 0.1
  * @date 2026-07-29
- * 
- * 
+ *
+ *
  */
 #include "raspi_serial.h"
 
@@ -60,7 +60,7 @@ static void save_data(const float value[VALUE_COUNT]) {
 
     latest_data.x = value[0];
     latest_data.y = value[1];
-    latest_data.th = value[2];
+    latest_data.th = -value[2];
     latest_data.x1 = value[3];
     latest_data.y1 = value[4];
     latest_data.a = value[5];
