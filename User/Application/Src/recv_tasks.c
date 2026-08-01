@@ -109,7 +109,7 @@ static void arm_ctrl(void *pvParameters) {
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
-                       pdMS_TO_TICKS(1000)) {
+                       pdMS_TO_TICKS(2000)) {
                     vTaskDelay(1);
                 }
             }
@@ -117,7 +117,7 @@ static void arm_ctrl(void *pvParameters) {
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
-                       pdMS_TO_TICKS(2000)) {
+                       pdMS_TO_TICKS(1000)) {
                     vTaskDelay(1);
                 }
             }
@@ -148,8 +148,8 @@ static void arm_ctrl(void *pvParameters) {
             //         vTaskDelay(1);
             //     }
             // }
-            // MAGNET_OFF();
-            servo_set_pulse_us(&servo, 1700);
+            MAGNET_OFF();
+            servo_set_pulse_us(&servo, 1600);
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
