@@ -8,7 +8,7 @@
             "name": "Debug: JLINK",
             "servertype": "jlink",
             "interface": "swd",
-            "executable": "build/Debug/g4_template.elf",
+            "executable": "build/Debug/g4_template.axf",
             "runToEntryPoint": "main",
             "device": "STM32G474VE",
             "svdFile": ".pack/Keil/STM32G4xx_DFP.1.6.0/CMSIS/SVD/STM32G474.svd",

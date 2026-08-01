@@ -77,8 +77,8 @@ extern servo_t servo;
     ((int32_t)((float)(deg) / ARM_DEG_PER_REV * (float)ARM_PULSE_PER_REV))
 
 /* ========================== Ïà»ú×ø±êÏµÆ«ÒÆ ========================== */
-#define CAM_X_CORRECT (-264.0f) /*!< XÖá³õÊ¼×ø±êÏµÆ«ÒÆ (mm) */ // ´ý²â
-#define CAM_Y_CORRECT (-28.0f) /*!< YÖá³õÊ¼×ø±êÏµÆ«ÒÆ (mm) */ // ´ý²â
+#define CAM_X_CORRECT (-272.0f) /*!< XÖá³õÊ¼×ø±êÏµÆ«ÒÆ (mm) */ // ´ý²â
+#define CAM_Y_CORRECT (-36.0f) /*!< YÖá³õÊ¼×ø±êÏµÆ«ÒÆ (mm) */ // ´ý²â
 
 // #define CAM_X_CORRECT (0.0f) /*!< XÖá³õÊ¼×ø±êÏµÆ«ÒÆ (mm) */ // ´ý²â
 // #define CAM_Y_CORRECT (0.0f) /*!< YÖá³õÊ¼×ø±êÏµÆ«ÒÆ (mm) */ // ´ý²â

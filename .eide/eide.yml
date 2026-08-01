@@ -229,4 +229,4 @@ targets:
         otherCmds: ""
         speed: 4M
         targetName: cortex_m
-    uploader: STLink
+    uploader: JLink
