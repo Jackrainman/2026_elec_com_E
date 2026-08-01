@@ -8,14 +8,15 @@
             "name": "Debug: JLINK",
             "servertype": "jlink",
             "interface": "swd",
-            "executable": "build/Debug/g4_template.elf",
             "runToEntryPoint": "main",
             "device": "STM32G474VE",
-            "svdFile": ".pack/Keil/STM32G4xx_DFP.1.6.0/CMSIS/SVD/STM32G474.svd",
-            "liveWatch": {
-                "enabled": true,
-                "samplesPerSecond": 4
-            }
+            "loadFiles": [
+                "Build/Debug/2026_elec_com_E.hex"
+            ],
+            "symbolFiles": [
+                "Build/Debug/2026_elec_com_E.axf"
+            ],
+            "svdFile": ".pack/Keil/STM32G4xx_DFP.1.6.0/CMSIS/SVD/STM32G474.svd"
         }
     ]
 }

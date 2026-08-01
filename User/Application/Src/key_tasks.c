@@ -52,55 +52,58 @@ static void arm_test(void *pvParameters) {
         key = key_scan(0);
         switch (key) {
             case KEY0_PRESS: {
-                /* 绝对位置: X=100mm, Y=50mm, R=0° */
-                int32_t tx = ARM_X_MM_TO_PULSE_S(50.0f + CAM_X_CORRECT);
-                int32_t ty = ARM_Y_MM_TO_PULSE_S(82.0f + CAM_Y_CORRECT);
-                int32_t tr = ARM_DEG_TO_PULSE_S(0.0f);
+                // /* 绝对位置: X=100mm, Y=50mm, R=0° */
+                // int32_t tx = ARM_X_MM_TO_PULSE_S(50.0f + CAM_X_CORRECT);
+                // int32_t ty = ARM_Y_MM_TO_PULSE_S(82.0f + CAM_Y_CORRECT);
+                // int32_t tr = ARM_DEG_TO_PULSE_S(0.0f);
 
-                arm_axis_move(1, tx, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(2, ty, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(3, tr, 100);
+                // arm_axis_move(1, tx, 100);
+                // vTaskDelay(pdMS_TO_TICKS(10));
+                // arm_axis_move(2, ty, 100);
+                // vTaskDelay(pdMS_TO_TICKS(10));
+                // arm_axis_move(3, tr, 100);
+                servo_set_pulse_us(&servo, 1250);
             } break;
 
             case KEY1_PRESS: {
-                /* 绝对位置: X=-30mm, Y=-30mm, R=-90° */
-                int32_t tx = ARM_X_MM_TO_PULSE_S(0.0f + CAM_X_CORRECT);
-                int32_t ty = ARM_Y_MM_TO_PULSE_S(0.0f + CAM_Y_CORRECT);
-                int32_t tr = ARM_DEG_TO_PULSE_S(-90.0f);
+                // /* 绝对位置: X=-30mm, Y=-30mm, R=-90° */
+                // int32_t tx = ARM_X_MM_TO_PULSE_S(0.0f + CAM_X_CORRECT);
+                // int32_t ty = ARM_Y_MM_TO_PULSE_S(0.0f + CAM_Y_CORRECT);
+                // int32_t tr = ARM_DEG_TO_PULSE_S(-90.0f);
 
-                arm_axis_move(1, tx, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(2, ty, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(3, tr, 100);
+                // arm_axis_move(1, tx, 100);
+                // vTaskDelay(pdMS_TO_TICKS(10));
+                // arm_axis_move(2, ty, 100);
+                // vTaskDelay(pdMS_TO_TICKS(10));
+                // arm_axis_move(3, tr, 100);
+                servo_set_pulse_us(&servo, 1400);
             } break;
 
             case KEY2_PRESS: {
-                /* 绝对位置: X=100mm, Y=100mm, R=270° */
-                int32_t tx = ARM_X_MM_TO_PULSE_S(100.0f + CAM_X_CORRECT);
-                int32_t ty = ARM_Y_MM_TO_PULSE_S(100.0f + CAM_Y_CORRECT);
-                int32_t tr = ARM_DEG_TO_PULSE_S(270.0f);
+                // /* 绝对位置: X=100mm, Y=100mm, R=270° */
+                // int32_t tx = ARM_X_MM_TO_PULSE_S(100.0f + CAM_X_CORRECT);
+                // int32_t ty = ARM_Y_MM_TO_PULSE_S(100.0f + CAM_Y_CORRECT);
+                // int32_t tr = ARM_DEG_TO_PULSE_S(270.0f);
 
-                arm_axis_move(1, tx, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(2, ty, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(3, tr, 100);
+                // arm_axis_move(1, tx, 100);
+                // vTaskDelay(pdMS_TO_TICKS(10));
+                // arm_axis_move(2, ty, 100);
+                // vTaskDelay(pdMS_TO_TICKS(10));
+                // arm_axis_move(3, tr, 100);
+                servo_set_pulse_us(&servo, 1550);
             } break;
 
             case WKUP_PRESS: {
                 /* 回零: X=0mm, Y=0mm, R=-180°（叠加偏移量） */
-                int32_t tx = ARM_X_MM_TO_PULSE_S(0.0f + CAM_X_CORRECT);
-                int32_t ty = ARM_Y_MM_TO_PULSE_S(50.0f + CAM_Y_CORRECT);
-                int32_t tr = ARM_DEG_TO_PULSE_S(-180.0f);
+                int32_t tx = ARM_X_MM_TO_PULSE_S(50.0f );
+                int32_t ty = ARM_Y_MM_TO_PULSE_S(0.0f);
+                // int32_t tr = ARM_DEG_TO_PULSE_S(-180.0f);
 
                 arm_axis_move(1, tx, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
+                vTaskDelay(pdMS_TO_TICKS(20));
                 arm_axis_move(2, ty, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(3, tr, 100);
+                vTaskDelay(pdMS_TO_TICKS(20));
+                // arm_axis_move(3, tr, 100);
             } break;
 
             default:
