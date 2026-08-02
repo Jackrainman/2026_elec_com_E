@@ -92,33 +92,33 @@ static void arm_ctrl(void *pvParameters) {
             arm_axis_move(3, 0, 100); /* R 轴绝对回零（移植自 main 的 last.th 逻辑） */
             vTaskDelay(pdMS_TO_TICKS(20));
 
-            arm_wait_axis_done(1, t1_x, 200, 2000);
-            arm_wait_axis_done(2, t1_y, 200, 2000);
-            arm_wait_axis_done(3, 0, 100, 2000);
+            arm_wait_axis_done(1, t1_x, 200, 1500);
+            arm_wait_axis_done(2, t1_y, 200, 1500);
+            arm_wait_axis_done(3, 0, 100, 1500);
 
             /* 第一个坐标到位 → 开气泵，1s 后关 */
             SERVO_DOWN();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
-                       pdMS_TO_TICKS(1000)) {
-                    vTaskDelay(1);
+                       pdMS_TO_TICKS(500)) {
+                    vTaskDelay(5);
                 }
             }
             MAGNET_ON();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
-                       pdMS_TO_TICKS(1000)) {
-                    vTaskDelay(1);
+                       pdMS_TO_TICKS(500)) {
+                    vTaskDelay(5);
                 }
             }
             SERVO_UP();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
-                       pdMS_TO_TICKS(2000)) {
-                    vTaskDelay(1);
+                       pdMS_TO_TICKS(1000)) {
+                    vTaskDelay(5);
                 }
             }
             /* —— 第二段：绝对位置 (X1, Y1, th)，叠加相机偏移 —— */
@@ -135,26 +135,26 @@ static void arm_ctrl(void *pvParameters) {
             arm_axis_move(3, t2_r, 100);
             vTaskDelay(pdMS_TO_TICKS(20));
 
-            arm_wait_axis_done(1, t2_x, 200, 2000);
-            arm_wait_axis_done(2, t2_y, 200, 2000);
-            arm_wait_axis_done(3, t2_r, 100, 2000);
+            arm_wait_axis_done(1, t2_x, 200, 1200);
+            arm_wait_axis_done(2, t2_y, 200, 1200);
+            arm_wait_axis_done(3, t2_r, 100, 1200);
 
             /* 第二个坐标到位 → 开气泵，1s 后关 */
-            // servo_set_pulse_us(&servo, 1350);
-            // {
-            //     TickType_t xPumpTick = xTaskGetTickCount();
-            //     while ((xTaskGetTickCount() - xPumpTick) <
-            //            pdMS_TO_TICKS(1000)) {
-            //         vTaskDelay(1);
-            //     }
-            // }
-            // MAGNET_OFF();
-            servo_set_pulse_us(&servo, 1700);
+            servo_set_pulse_us(&servo, 1350);
+            MAGNET_OFF();
             {
                 TickType_t xPumpTick = xTaskGetTickCount();
                 while ((xTaskGetTickCount() - xPumpTick) <
-                       pdMS_TO_TICKS(1000)) {
-                    vTaskDelay(1);
+                       pdMS_TO_TICKS(500)) {
+                    vTaskDelay(5);
+                }
+            }
+            servo_set_pulse_us(&servo, 1900);
+            {
+                TickType_t xPumpTick = xTaskGetTickCount();
+                while ((xTaskGetTickCount() - xPumpTick) <
+                       pdMS_TO_TICKS(500)) {
+                    vTaskDelay(5);
                 }
             }
 
@@ -162,7 +162,6 @@ static void arm_ctrl(void *pvParameters) {
             send_reply("ok");
             rounds--;
             if (rounds <= 0) {
-                LED1_ON();
                 /* 回原点 */
                 // arm_axis_move(1, 0, 100);
                 // vTaskDelay(pdMS_TO_TICKS(20));
@@ -170,6 +169,7 @@ static void arm_ctrl(void *pvParameters) {
                 // vTaskDelay(pdMS_TO_TICKS(20));
                 // arm_axis_move(3, 0, 100);
                 // vTaskDelay(pdMS_TO_TICKS(1000));
+                LED1_ON();
                 vTaskSuspend(NULL);
             }
         }
