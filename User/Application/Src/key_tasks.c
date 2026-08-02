@@ -31,7 +31,7 @@ void key_tasks_init(void) {
  *
  * 实际动作 (以代码为准, 现场按需直接改数值):
  * KEY0: X=100mm,  Y=50mm,   R=0°
- * KEY1: X=-30mm,  Y=-30mm,  R=-90°
+ * KEY1: 跑一遍完整两段搬运流程 (取料 -> 放料, 坐标在 case 内硬编码)
  * KEY2: X=100mm,  Y=100mm,  R=270°
  * WKUP: X=0mm,    Y=0mm,    R=-180°  (回零，叠加偏移)
  *
@@ -65,16 +65,60 @@ static void arm_test(void *pvParameters) {
             } break;
 
             case KEY1_PRESS: {
-                /* 绝对位置: X=-30mm, Y=-30mm, R=-90° */
-                int32_t tx = ARM_X_MM_TO_PULSE_S(0.0f + CAM_X_CORRECT);
-                int32_t ty = ARM_Y_MM_TO_PULSE_S(0.0f + CAM_Y_CORRECT);
-                int32_t tr = ARM_DEG_TO_PULSE_S(-90.0f);
+                /* 流程坐标 (相机坐标系, mm/°), 现场按需直接改数值 */
+                float pick_x = 200.0f, pick_y = 300.0f;     /* 第一段: 取料点 */
+                float place_x = 100.0f, place_y = 100.0f; /* 第二段: 放料点 */
+                float place_th = 0.0f; /* 第二段: R 轴角度 */
 
-                arm_axis_move(1, tx, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(2, ty, 100);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                arm_axis_move(3, tr, 100);
+                LED1_ON(); /* 流程忙指示, 跑完熄灭 */
+
+                /* —— 第一段: 绝对位置 (取料点), 叠加相机偏移, R 轴同时回零 —— */
+                int32_t t1_x = ARM_X_MM_TO_PULSE_S(pick_x + CAM_X_CORRECT);
+                int32_t t1_y = -ARM_Y_MM_TO_PULSE_S(pick_y + CAM_Y_CORRECT);
+
+                arm_axis_move(1, t1_x, 100);
+                vTaskDelay(pdMS_TO_TICKS(20));
+                arm_axis_move(2, t1_y, 100);
+                vTaskDelay(pdMS_TO_TICKS(20));
+                arm_axis_move(3, 0, 100); /* R 轴绝对回零 */
+                vTaskDelay(pdMS_TO_TICKS(20));
+
+                arm_wait_axis_done(1, t1_x, 200, 2000);
+                arm_wait_axis_done(2, t1_y, 200, 2000);
+                arm_wait_axis_done(3, 0, 100, 2000);
+
+                /* 取料点到位: 下探吸料后抬起 */
+                SERVO_DOWN();
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                MAGNET_ON();
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                SERVO_UP();
+                vTaskDelay(pdMS_TO_TICKS(2000));
+
+                /* —— 第二段: 绝对位置 (放料点 + th), 叠加相机偏移 —— */
+                int32_t t2_x = ARM_X_MM_TO_PULSE_S(place_x + CAM_X_CORRECT);
+                int32_t t2_y = -ARM_Y_MM_TO_PULSE_S(place_y + CAM_Y_CORRECT);
+                int32_t t2_r =
+                    ARM_DEG_TO_PULSE_S(place_th); // 这里需要确认转向是否正确
+
+                arm_axis_move(1, t2_x, 100);
+                vTaskDelay(pdMS_TO_TICKS(20));
+                arm_axis_move(2, t2_y, 100);
+                vTaskDelay(pdMS_TO_TICKS(20));
+                /* 第一段已保证 R 在原点, th 直接作绝对目标 */
+                arm_axis_move(3, t2_r, 100);
+                vTaskDelay(pdMS_TO_TICKS(20));
+
+                arm_wait_axis_done(1, t2_x, 200, 2000);
+                arm_wait_axis_done(2, t2_y, 200, 2000);
+                arm_wait_axis_done(3, t2_r, 100, 2000);
+
+                /* 放料点到位: 松开放料 */
+                // MAGNET_OFF();
+                servo_set_pulse_us(&servo, 1700);
+                vTaskDelay(pdMS_TO_TICKS(1000));
+
+                LED1_OFF();
             } break;
 
             case KEY2_PRESS: {
